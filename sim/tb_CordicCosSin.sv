@@ -2,7 +2,7 @@
 
 module tb_CordicCosSin();
 
-   localparam int    T           = 10;    
+   localparam int    T = 10;    
    // parameters from generated file
    `include "parms.vh"     
 

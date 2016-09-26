@@ -1,4 +1,5 @@
-cd E:/projects/rtllib/cordic/sim
+# relative to matlab callscript
+cd ../sim/ 
 
 if {[file exists rtl_work]} {
    vdel -lib rtl_work -all

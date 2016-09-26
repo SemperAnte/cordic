@@ -73,7 +73,7 @@ for i = 1 : L
             y = accumneg( y, xsh, 'Floor', 'Wrap' );
             z = accumpos( z, atanlut( j + 1 ), 'Floor', 'Wrap' );
         end;
-        % fprintf('j: %i \n', j);
+        % fprintf('j  : %i \n', j);
         % fprintf('x  : %i (%s)\n', x.int, x.bin);
         % fprintf('y  : %i (%s)\n', y.int, y.bin);
         % fprintf('xsh: %i (%s)\n', xsh.int, xsh.bin);

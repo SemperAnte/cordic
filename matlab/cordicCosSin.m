@@ -1,14 +1,13 @@
-% testbench for CORDIC cosine/sine algorithm
+% CORDIC cosine/sine algorithm
 clc; clear; close all;
-addpath( 'cordic' );
-addpath( 'E:\templates\matlab' );
+addpath( 'func' );
 
 fpathTestbench = '..\sim\';
 fpathModelsim  = 'D:\CADS\Modelsim10_1c\win32\modelsim.exe';
 
 CORDIC_TYPE = 0;  % for testbench - '0' for "SERIAL", '1' for "PARALLEL"
-CORDIC_N    = 20;  % number of iterations for CORDIC algorithm
-PHI_WDT     = 24; % width of input angle phi (outputs is same width)  
+CORDIC_N    = 13; % number of iterations for CORDIC algorithm
+PHI_WDT     = 18; % width of input angle phi (outputs is same width)  
 
 % input angle phi
 Npoints = 1.0e3;  % number of points
@@ -25,15 +24,17 @@ end
 fprintf( 'CORDIC_N = %i\n', CORDIC_N );
 fprintf( 'PHI_WDT  = %i\n', PHI_WDT );
 
+% double
 tic;
 cosMat = cos( double( phi ) * 2 * pi );
 sinMat = sin( double( phi ) * 2 * pi );
 timeMat = toc;
+% cordic fast
 tic;
 [ cosCrd, sinCrd ] = cordicCosSinFast( phi, CORDIC_N );
 timeCrd = toc;
-fprintf( 'time for matlab algorithm ( double  ) = %f s\n', timeMat );
-fprintf( 'time for cordic algorithm ( integer ) = %f s\n', timeCrd );
+fprintf( 'time for matlab algorithm ( double    ) = %f s\n', timeMat );
+fprintf( 'time for cordic algorithm ( integer   ) = %f s\n', timeCrd );
 
 if ( true )
     figure;
@@ -63,9 +64,19 @@ if ( true )
     grid on;   
 end
 
-[ cosSlow, sinSlow ] = cordicCosSinSlow( phi, CORDIC_N );
-all( cosSlow == cosCrd )
-all( sinSlow == sinCrd )
+% check cordic slow version ( with fi objects ) if needed
+if ( true )
+    tic;
+    [ cosSlow, sinSlow ] = cordicCosSinSlow( phi, CORDIC_N );
+    timeSlow = toc;
+    fprintf( 'time for cordic algorithm ( fi object ) = %f s\n', timeSlow );
+    if ( any( cosSlow ~= cosCrd ) )
+        warning( 'Outputs of fast and slow cosine cordic algorithms arent equal' );
+    end
+    if ( any( sinSlow ~= sinCrd ) )
+        warning( 'Outputs of fast and slow sine cordic algorithms arent equal' );
+    end
+end
 %% create data for testbench
 % file with parms
 fileID = fopen( [ fpathTestbench 'parms.vh' ], 'wt' );
@@ -80,7 +91,7 @@ fprintf( fileID, '               PHI_WDT = %i;\n', PHI_WDT );
 fclose( fileID );
 ang = ufi( 0 : 1e-2 : 1, PHI_WDT, PHI_WDT );
 % file with phi
-txt_file_write( [ fpathTestbench 'phi.txt' ], phi, 'DEC' );
+txtFileWrite( [ fpathTestbench 'phi.txt' ], phi, 'DEC' );
 
 %% autorun Modelsim
 if ( exist( [ fpathTestbench 'flag.txt' ], 'file' ) )
@@ -94,8 +105,8 @@ end;
 
 %% read data from testbench
 NT = numerictype( 1, cosCrd.WordLength, cosCrd.FractionLength );
-cosHdl = txt_file_read( [ fpathTestbench 'cos.txt' ], NT, 'DEC' );
-sinHdl = txt_file_read( [ fpathTestbench 'sin.txt' ], NT, 'DEC' );
+cosHdl = txtFileRead( [ fpathTestbench 'cos.txt' ], NT, 'DEC' );
+sinHdl = txtFileRead( [ fpathTestbench 'sin.txt' ], NT, 'DEC' );
 
 if ( length( cosCrd ) == length( cosHdl ) )
     fprintf( 'length is equal = %i\n', length( cosCrd ) );
