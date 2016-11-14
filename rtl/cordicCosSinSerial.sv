@@ -27,8 +27,7 @@ module cordicCosSinSerial
    // regs   
    logic signed [ PHI_WDT - 1 : 0 ] x, y, z;    
    logic        [ N_WDT   - 1 : 0 ] ni;      // number of iteration
-   logic                            qrt;     // '1' for 2 or 3 quarter   
-      
+   logic                            qrt;     // '1' for 2 or 3 quarter      
    // comb part
    logic signed [ PHI_WDT - 1 : 0 ] phiCnv;
    logic signed [ PHI_WDT - 1 : 0 ] xShift, yShift;
@@ -127,7 +126,7 @@ module cordicCosSinSerial
    // shift reg
    assign xShift = x >>> ni;
    assign yShift = y >>> ni;
-   assign atan = atanLUTshort[ ni ];
+   assign atan   = atanLUTshort[ ni ];
    // for 2 or 3 quarter change sign
    assign xCnv = ( qrt ) ? - signalSaturate( x ) : signalSaturate( x );
    assign yCnv = signalSaturate( y );

@@ -67,7 +67,7 @@ if ( true )
 end
 
 % check cordic slow version ( with fi objects ) if needed
-if ( true )
+if ( false )
     tic;
     [ magSlow, phSlow ] = cordicMagPhSlow( x, y, CORDIC_N );
     timeSlow = toc;
