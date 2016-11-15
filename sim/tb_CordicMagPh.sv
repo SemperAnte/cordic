@@ -1,6 +1,6 @@
 `timescale 1 ns / 100 ps
 
-module tb_CordicCosSin();
+module tb_CordicMagPh();
 
    localparam int    T = 10;    
    // parameters from generated file
@@ -11,25 +11,27 @@ module tb_CordicCosSin();
    logic                            sclr;
    logic                            en;
    logic                            st;
-   logic        [ PHI_WDT - 1 : 0 ] phi;
+   logic signed  [ XY_WDT - 1 : 0 ] xin;
+   logic signed  [ XY_WDT - 1 : 0 ] yin;   
    logic                            rdy;
-   logic signed [ PHI_WDT - 1 : 0 ] cos;
-   logic signed [ PHI_WDT - 1 : 0 ] sin;
+   logic signed  [ XY_WDT - 1 : 0 ] mag;
+   logic signed  [ XY_WDT + 1 : 0 ] ph;
    
-   cordicCosSin
+   cordicMagPh
       #( .CORDIC_TYPE ( CORDIC_TYPE ),
          .N           ( N           ),      
-         .PHI_WDT     ( PHI_WDT     ) )
+         .PHI_WDT     ( XY_WDT      ) )
    uut
        ( .clk   ( clk   ),
          .reset ( reset ),
          .sclr  ( sclr  ),
          .en    ( en    ),
          .st    ( st    ),
-         .phi   ( phi   ),
+         .xin   ( xin   ),
+         .yin   ( yin   ),
          .rdy   ( rdy   ),
-         .cos   ( cos   ),
-         .sin   ( sin   ) );
+         .mag   ( mag   ),
+         .ph    ( ph    ) );
          
    always
    begin

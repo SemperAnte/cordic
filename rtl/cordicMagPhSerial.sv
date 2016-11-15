@@ -30,14 +30,20 @@ module cordicMagPhSerial
    // regs
    logic signed [ XY_WDT + 1 : 0 ] x, y, z;
    logic        [ N_WDT  - 1 : 0 ] ni;      // number of iteration
-   logic                           qrt;     // '1' for 2 or 3 quarter
+   logic                           qrt;     // '1' for 2 or 3 quarter ( xin < 0 )
    // comb part
    logic signed [ XY_WDT + 1 : 0 ] xShift, yShift;
+   logic        [ XY_WDT - 2 : 0 ] atan;
+   logic signed [ XY_WDT + 1 : 0 ] zCnv;
+   // comb, multiplier r = a * coefd
+   logic            [ XY_WDT : 0 ] a;
+   logic    [ 2 * XY_WDT - 1 : 0 ] r;
    
    // fsm
    enum int unsigned { ST0, ST1, ST2, ST3 } state;
    
    `define INFO_MODE    // display LUT values
+   localparam PHI_WDT = XY_WDT + 1;
    // full LUT tables for atan, coefd generated with Matlab
    `include "cordicLUT.vh"
    `include "cordicPkg.vh"
@@ -61,10 +67,10 @@ module cordicMagPhSerial
          rdy <= 1'b0;         
          // check sign of input xin ( CORDIC algorithm works only for x >= 0)
          if ( xin < 0 ) begin
-            x   <= -x;
+            x   <= -xin;
             qrt <= 1'b1;
-         end else begin // x >= 0
-            x   <= x;
+         end else begin // xin >= 0
+            x   <= xin;
             qrt <= 1'b0;
          end
          y <= yin;
@@ -80,12 +86,12 @@ module cordicMagPhSerial
                if ( ~|y ) begin // y == 0
                   rdy <= 1'b1;
                   
-                  if ( ~qrt ) 
+                  if ( ~qrt ) // xin was >= 0 
                      z <= '0;
                   else
-                     z <= // 0100
+                     z <= { 2'b01, { XY_WDT { 1'b0 } } }; // phi = pi, 0100 ...
                   state <= ST0; // finish algorithm
-               end else begin // y != 0
+               end else begin // y != 0, use CORDIC algorithm
                   if ( y < 0 ) begin
                      x <= x - y;
                      y <= y + x;
@@ -104,30 +110,23 @@ module cordicMagPhSerial
                   x <= x - yShift;
                   y <= y + xShift;
                   z <= z - atan;
-               end else begin
+               end else begin // y >= 0
                   x <= x + yShift;
                   y <= y - xShift;
                   z <= z + atan;
                end
                if ( ni < N - 1 ) begin // next iteration
-                  ni    <= ni + 1;
+                  ni    <= ni + 1'd1;
                   state <= ST2;
                end else begin
                   ni    <= '0;
                   state <= ST3;
                end                  
             end
-            ST3 : begin
-               
-               // convert output phi
-               if ( ~qrt ) begin // 1 or 4 quarter
-                  z <= z;
-               end else begin    // 2 or 3 quarter
-                  if ( z >= 0 )
-                     z <= { 2'b01, { XY_WDT - 1 { 1'b0 } } } - z; //  pi - z
-                  else // z < 0
-                     z <= { 2'b11, { XY_WDT - 1 { 1'b0 } } } - z; // -pi - z
-               end
+            ST3 : begin    
+               rdy   <= 1'b1;
+               x     <= { 1'b0, r[ 2 * XY_WDT - 1 : XY_WDT - 1 ];
+               z     <= zCnv;
                state <= ST0;
             end
          endcase
@@ -138,6 +137,26 @@ module cordicMagPhSerial
    assign xShift = x >>> ni;
    assign yShift = y >>> ni;
    assign atan   = atanLUTshort[ ni ];
+   
+   always_comb begin
+      if ( x >= 0 )
+         a = x[ XY_WDT : 0 ];
+      else
+         a = '0;
+      r = a * coefd;
+   end
+   
+   always_comb begin
+      zCnv = { 1'b0, signalSaturate( z[ XY_WDT : 0 ] );
+      if ( ~qrt ) begin // 1 or 4 quarter
+         zCnv = zCnv;
+      end else begin    // 2 or 3 quarter
+         if ( zCnv >= 0 )
+            zCnv = { 2'b01, { XY_WDT - 1 { 1'b0 } } } - z; //  pi - z
+         else
+            zCnv = { 2'b11, { XY_WDT - 1 { 1'b0 } } } - z; // -pi - z
+      end      
+   end
    
    // outputs
    assign mag = x[ XY_WDT - 1 : 0 ];
