@@ -39,6 +39,7 @@ module cordicCosSinParallel
    `define INFO_MODE    // display LUT values
    // full LUT tables for atan, coefd generated with Matlab
    `include "cordicLUT.vh"
+   localparam int PKG_WDT = PHI_WDT;
    `include "cordicPkg.vh"
    
    always_ff @( posedge clk, posedge reset ) begin

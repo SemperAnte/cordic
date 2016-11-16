@@ -40,6 +40,7 @@ module cordicCosSinSerial
    `define INFO_MODE    // display LUT values
    // full LUT tables for atan, coefd generated with Matlab
    `include "cordicLUT.vh"
+   localparam int PKG_WDT = PHI_WDT;
    `include "cordicPkg.vh" 
    
    always_ff @( posedge clk, posedge reset ) begin      
@@ -123,7 +124,7 @@ module cordicCosSinSerial
          phiCnv = { phiCnv[ PHI_WDT - 1 ], ~phiCnv[ PHI_WDT - 2 : 0 ] };  
       end
    end
-   // shift reg
+   // shift
    assign xShift = x >>> ni;
    assign yShift = y >>> ni;
    assign atan   = atanLUTshort[ ni ];

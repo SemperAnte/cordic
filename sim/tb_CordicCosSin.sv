@@ -1,6 +1,6 @@
 `timescale 1 ns / 100 ps
 
-module tb_CordicCosSin();
+module tb_cordicCosSin();
 
    localparam int    T = 10;    
    // parameters from generated file
@@ -64,7 +64,7 @@ module tb_CordicCosSin();
          $stop;
       end
       
-      st = 1'b0;
+      st  = 1'b0;
       phi = '0;
       
       if ( CORDIC_TYPE == "SERIAL" ) begin
@@ -86,7 +86,6 @@ module tb_CordicCosSin();
          # ( 10 * T );    
 
       end else if ( CORDIC_TYPE == "PARALLEL" ) begin
-         bit eof = 1'b0;
          @ ( negedge reset );
          # ( 10 * T );
          while ( !$feof( phiFile ) ) begin

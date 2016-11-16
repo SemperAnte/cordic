@@ -79,14 +79,15 @@ magCrd( magCrd < 0 ) = 0;
 magCrd = ufi( double( magCrd ) / 2 ^ ( XY_WDT - 1 ), XY_WDT + 1, XY_WDT - 1 );
 coefd = ufi( double( coefd ) / 2 ^ ( XY_WDT - 1 ), XY_WDT - 1, XY_WDT - 1 );
 F = fimath( 'ProductMode', 'SpecifyPrecision',...
-            'ProductWordLength', XY_WDT, ...
+            'ProductWordLength', XY_WDT + 1, ...
             'ProductFractionLength', XY_WDT - 1, ...
             'RoundingMethod', 'Floor');
 magCrd( scl ) = mpy( F, magCrd( scl ), coefd );
-        
+magCrd = ufi( magCrd, XY_WDT, XY_WDT - 1 );
+     
 % saturate phase [ -pi/2 pi/2 ]
 phCrd( phCrd >  2 ^ ( XY_WDT - 1 ) ) =  2 ^ ( XY_WDT - 1 );
-phCrd( phCrd < -2 ^ ( XY_WDT - 1 ) ) = -2 ^ ( XY_WDT - 1 );
+phCrd( phCrd < -2 ^ ( XY_WDT - 1 ) ) = -2 ^ ( XY_WDT - 1 );  
 % calc phase depending on quarter
 ind = qrt & ( phCrd >= 0 );
 phCrd( ind ) = 2 ^ XY_WDT - phCrd( ind );   % pi - z  

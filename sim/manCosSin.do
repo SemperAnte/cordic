@@ -1,5 +1,4 @@
-# relative to matlab callscript
-cd ../sim/ 
+transcript on
 
 if {[file exists rtl_work]} {
    vdel -lib rtl_work -all
@@ -13,9 +12,13 @@ file copy -force {../rtl/cordicPkg.vh} {cordicPkg.vh}
 vlog     -work work {../rtl/cordicCosSinParallel.sv}
 vlog     -work work {../rtl/cordicCosSinSerial.sv}
 vlog     -work work {../rtl/cordicCosSin.sv}
-vlog     -work work {tb_CordicCosSin.sv}
+vlog     -work work {tb_cordicCosSin.sv}
 
-vsim -t 1ns -L work -voptargs="+acc" tb_CordicCosSin
+vsim -t 1ns -L work -voptargs="+acc" tb_cordicCosSin
 
-onbreak {exit -force}
+add wave *
+
+view structure
+view signals
 run -all
+wave zoomfull

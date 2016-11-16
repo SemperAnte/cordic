@@ -1,4 +1,4 @@
-## Generated SDC file "cordic.sdc"
+## Generated SDC file "cordicCosSin.sdc"
 
 ## Copyright (C) 1991-2015 Altera Corporation. All rights reserved.
 ## Your use of Altera Corporation's design tools, logic functions 

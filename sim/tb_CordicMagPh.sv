@@ -1,6 +1,6 @@
 `timescale 1 ns / 100 ps
 
-module tb_CordicMagPh();
+module tb_cordicMagPh();
 
    localparam int    T = 10;    
    // parameters from generated file
@@ -14,13 +14,13 @@ module tb_CordicMagPh();
    logic signed  [ XY_WDT - 1 : 0 ] xin;
    logic signed  [ XY_WDT - 1 : 0 ] yin;   
    logic                            rdy;
-   logic signed  [ XY_WDT - 1 : 0 ] mag;
+   logic         [ XY_WDT - 1 : 0 ] mag;
    logic signed  [ XY_WDT + 1 : 0 ] ph;
    
    cordicMagPh
       #( .CORDIC_TYPE ( CORDIC_TYPE ),
          .N           ( N           ),      
-         .PHI_WDT     ( XY_WDT      ) )
+         .XY_WDT      ( XY_WDT      ) )
    uut
        ( .clk   ( clk   ),
          .reset ( reset ),
@@ -56,38 +56,45 @@ module tb_CordicMagPh();
    
    initial
    begin
-      static int phiFile = $fopen( "phi.txt", "r" );      
-      static int cosFile = $fopen( "cos.txt", "w" );
-      static int sinFile = $fopen( "sin.txt", "w" );
+      static int xinFile = $fopen( "xin.txt", "r" );      
+      static int yinFile = $fopen( "yin.txt", "r" ); 
+      static int magFile = $fopen( "mag.txt", "w" );
+      static int phFile  = $fopen( "ph.txt",  "w" );
       static int flagFile;
       
-      if ( phiFile == 0 ) begin
-         $display( "Cant open file phi.txt" );
+      if ( !xinFile )
+         $display( "Cant open file xin.txt" );
+      if ( !yinFile )
+         $display( "Cant open file yin.txt" );
+      if ( !xinFile || !yinFile )
          $stop;
-      end
       
-      st = 1'b0;
-      phi = '0;
+      st  = 1'b0;
+      xin = '0;
+      yin = '0;
       
       if ( CORDIC_TYPE == "SERIAL" ) begin
          wait ( rdy );
          @ ( negedge clk );
-         while ( !$feof( phiFile ) ) begin         
+         while ( !$feof( xinFile ) || !$feof( yinFile ) ) begin         
             st = 1'b1;
-            // read phi from file
-            $fscanf( phiFile, "%d\n", phi );
+            // read xin and yin from file
+            $fscanf( xinFile, "%d\n", xin );
+            $fscanf( yinFile, "%d\n", yin );            
             # ( T );
             st = 1'b0;
             wait ( rdy );
             @ ( negedge clk );
-            // write cos and sin to file
-            $fwrite( cosFile, "%d\n", cos );
-            $fwrite( sinFile, "%d\n", sin );
+            // write mag and ph to file
+            $fwrite( magFile, "%d\n", mag );
+            $fwrite( phFile,  "%d\n", ph  );
          end     
-         phi = '0;             
+         xin = '0;             
+         yin = '0;             
          # ( 10 * T );    
 
-      end else if ( CORDIC_TYPE == "PARALLEL" ) begin
+/*       end 
+      else if ( CORDIC_TYPE == "PARALLEL" ) begin
          bit eof = 1'b0;
          @ ( negedge reset );
          # ( 10 * T );
@@ -112,13 +119,14 @@ module tb_CordicMagPh();
                $fwrite( sinFile, "%d\n", sin );            
             end
          end
-         # ( 10 * T );
+         # ( 10 * T ); */
       end else
          $display( "Not correct parameter CORDIC_TYPE" );
          
-      $fclose( phiFile );
-      $fclose( cosFile );
-      $fclose( sinFile );
+      $fclose( xinFile );
+      $fclose( yinFile );      
+      $fclose( magFile );
+      $fclose( phFile  );
       
       // flag for automatic testbench
       flagFile = $fopen( "flag.txt", "w" );

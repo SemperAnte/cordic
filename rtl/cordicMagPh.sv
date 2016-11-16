@@ -4,16 +4,17 @@
 // Author:        Shustov Aleksey ( SemperAnte ), semte@semte.ru
 // History:
 //    14.11.2016 - 0.1, created
+//    16.11.2016 - 0.2, serial architecture is completed
 //--------------------------------------------------------------------------------
 // calc magnitude and phase of inputs x, y by CORDIC algorithm
-// architecture: serial   - requires N + 3 clocks
-//               parallel - pipelined for N + 3 clocks
+// architecture: serial   - requires N + 2 clocks
+//               parallel - pipelined for N + 2 clocks ( not ready yet )
 // see Matlab bit accurate model
 //--------------------------------------------------------------------------------
 module cordicMagPh
    #( parameter string CORDIC_TYPE = "SERIAL",         // "PARALLEL" ( not ready yet ) or "SERIAL"
                 int    N           = 13,               // number of iterations for CORDIC algorithm
-                int    XY_WDT      = 18 )              // width of input angle phi (outputs is same width)                
+                int    XY_WDT      = 18 )              // width of inputs x, y                 
     ( input  logic                            clk,
       input  logic                            reset,   // async reset
       input  logic                            sclr,    // sync clear
@@ -25,7 +26,7 @@ module cordicMagPh
             
       output logic                           rdy,      // result is ready
       output logic        [ XY_WDT - 1 : 0 ] mag,      // range [ 0 ~1.41 ], unsigned
-      output logic        [ XY_WDT + 1 : 0 ] ph );     // range ( -pi( 1100.. ) ... pi( 0100.. ) ]
+      output logic signed [ XY_WDT + 1 : 0 ] ph );     // range ( -pi( 1100.. ) ... pi( 0100.. ) ], signed 2, bit wider XY_WDT
  
    generate
       if ( CORDIC_TYPE == "SERIAL" ) begin // serial architecture

@@ -4,27 +4,26 @@
 // Author:        Shustov Aleksey ( SemperAnte ), semte@semte.ru
 // History:
 //    14.11.2016 - created
+//    16.11.2016 - done, verified with Matlab
 //--------------------------------------------------------------------------------
-// calc magnitude and phase of inputs x, y by CORDIC algorithm
-// architecture: serial   - requires N + 3 clocks
-//               parallel - pipelined for N + 3 clocks
-// see Matlab bit accurate model
+// serial architecture for CORDIC algorithm
+// requires N + 2 clocks
 //--------------------------------------------------------------------------------
 module cordicMagPhSerial
    #( parameter int    N,       // number of iterations for CORDIC algorithm
-                int    XY_WDT ) // width of input angle phi (outputs is same width)                
-    ( input  logic                            clk,
-      input  logic                            reset,   // async reset
-      input  logic                            sclr,    // sync clear
-      input  logic                            en,      // clock enable
+                int    XY_WDT ) // width of inputs x, y                
+    ( input  logic                           clk,
+      input  logic                           reset,    // async reset
+      input  logic                           sclr,     // sync clear
+      input  logic                           en,       // clock enable
       
-      input  logic                            st,      // start calc
+      input  logic                           st,       // start calc
       input  logic signed [ XY_WDT - 1 : 0 ] xin,      // full range [ -1 1 )
       input  logic signed [ XY_WDT - 1 : 0 ] yin,      // full range [ -1 1 )
             
       output logic                           rdy,      // result is ready
       output logic        [ XY_WDT - 1 : 0 ] mag,      // range [ 0 ~1.41 ], unsigned
-      output logic signed [ XY_WDT + 1 : 0 ] ph );     // range ( -pi( 1100.. ) ... pi( 0100.. ) ], signed
+      output logic signed [ XY_WDT + 1 : 0 ] ph );     // range ( -pi( 1100.. ) ... pi( 0100.. ) ], signed 2 bit wider XY_WDT
  
    localparam N_WDT = $clog2( N );
    // regs
@@ -40,12 +39,12 @@ module cordicMagPhSerial
    logic    [ 2 * XY_WDT - 1 : 0 ] r;
    
    // fsm
-   enum int unsigned { ST0, ST1, ST2, ST3 } state;
+   enum int unsigned { ST0, ST1, ST2, ST3 } state;   
    
    `define INFO_MODE    // display LUT values
-   localparam PHI_WDT = XY_WDT + 1;
    // full LUT tables for atan, coefd generated with Matlab
    `include "cordicLUT.vh"
+   localparam int PKG_WDT = XY_WDT + 1;
    `include "cordicPkg.vh"
    
    always_ff @( posedge clk, posedge reset )
@@ -125,7 +124,7 @@ module cordicMagPhSerial
             end
             ST3 : begin    
                rdy   <= 1'b1;
-               x     <= { 1'b0, r[ 2 * XY_WDT - 1 : XY_WDT - 1 ];
+               x     <= { 1'b0, r[ 2 * XY_WDT - 1 : XY_WDT - 1 ] };
                z     <= zCnv;
                state <= ST0;
             end
@@ -133,33 +132,35 @@ module cordicMagPhSerial
       end
    end
    
-   // shift reg
+   // shift
    assign xShift = x >>> ni;
    assign yShift = y >>> ni;
-   assign atan   = atanLUTshort[ ni ];
-   
+   assign atan   = atanLUTshort[ ni ];   
+   // multiplier r = a * coefd
    always_comb begin
       if ( x >= 0 )
          a = x[ XY_WDT : 0 ];
       else
          a = '0;
       r = a * coefd;
-   end
-   
-   always_comb begin
-      zCnv = { 1'b0, signalSaturate( z[ XY_WDT : 0 ] );
+   end   
+   // z transform for last interation
+   always_comb begin      
+      // limit z [ -pi/2 ... pi/2 ]
+      zCnv = { z[ XY_WDT + 1 ], signalSaturate( z[ XY_WDT : 0 ] ) };     
+      
       if ( ~qrt ) begin // 1 or 4 quarter
          zCnv = zCnv;
       end else begin    // 2 or 3 quarter
          if ( zCnv >= 0 )
-            zCnv = { 2'b01, { XY_WDT - 1 { 1'b0 } } } - z; //  pi - z
+            zCnv = { 2'b01, { XY_WDT { 1'b0 } } } - zCnv; //  pi - z
          else
-            zCnv = { 2'b11, { XY_WDT - 1 { 1'b0 } } } - z; // -pi - z
+            zCnv = { 2'b11, { XY_WDT { 1'b0 } } } - zCnv; // -pi - z
       end      
    end
    
    // outputs
    assign mag = x[ XY_WDT - 1 : 0 ];
    assign ph  = z;
-     
+   
 endmodule

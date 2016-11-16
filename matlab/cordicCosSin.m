@@ -2,10 +2,10 @@
 clc; clear; close all;
 addpath( 'func' );
 
-fpathTestbench = '..\sim\';
+fpathSim = '..\sim\';
 fpathModelsim  = 'D:\CADS\Modelsim10_1c\win32\modelsim.exe';
 
-CORDIC_TYPE = 0;  % for testbench - '0' for "SERIAL", '1' for "PARALLEL"
+CORDIC_TYPE = 1;  % for testbench - '0' for "SERIAL", '1' for "PARALLEL"
 CORDIC_N    = 13; % number of iterations for CORDIC algorithm
 PHI_WDT     = 18; % width of input angle phi (outputs is same width)  
 
@@ -36,6 +36,7 @@ timeCrd = toc;
 fprintf( 'time for matlab algorithm ( double    ) = %f s\n', timeMat );
 fprintf( 'time for cordic algorithm ( integer   ) = %f s\n', timeCrd );
 
+% plot compare
 if ( true )
     figure;
     subplot( 2, 1, 1 );
@@ -79,7 +80,7 @@ if ( true )
 end
 %% create data for testbench
 % file with parms
-fileID = fopen( [ fpathTestbench 'parms.vh' ], 'wt' );
+fileID = fopen( [ fpathSim 'parms.vh' ], 'wt' );
 fprintf( fileID, '// Automatically generated with Matlab, dont edit\n' );
 if ( ~CORDIC_TYPE )
     fprintf( fileID, 'localparam string CORDIC_TYPE = "SERIAL";\n' );
@@ -89,24 +90,23 @@ end
 fprintf( fileID, 'localparam int N       = %i,\n', CORDIC_N );
 fprintf( fileID, '               PHI_WDT = %i;\n', PHI_WDT );
 fclose( fileID );
-ang = ufi( 0 : 1e-2 : 1, PHI_WDT, PHI_WDT );
 % file with phi
-txtFileWrite( [ fpathTestbench 'phi.txt' ], phi, 'DEC' );
+txtFileWrite( [ fpathSim 'phi.txt' ], phi, 'DEC' );
 
 %% autorun Modelsim
-if ( exist( [ fpathTestbench 'flag.txt' ], 'file' ) )
-     delete( [ fpathTestbench 'flag.txt' ] );
+if ( exist( [ fpathSim 'flag.txt' ], 'file' ) )
+     delete( [ fpathSim 'flag.txt' ] );
 end;
-status = system( [ fpathModelsim ' -do ' fpathTestbench 'auto.do' ] );
+status = system( [ fpathModelsim ' -do ' fpathSim 'autoCosSin.do' ] );
 pause on;
-while ( ~exist( [ fpathTestbench 'flag.txt' ], 'file' ) ) % wait for flag file
+while ( ~exist( [ fpathSim 'flag.txt' ], 'file' ) ) % wait for flag file
     pause( 1 );
 end;
 
 %% read data from testbench
-NT = numerictype( 1, cosCrd.WordLength, cosCrd.FractionLength );
-cosHdl = txtFileRead( [ fpathTestbench 'cos.txt' ], NT, 'DEC' );
-sinHdl = txtFileRead( [ fpathTestbench 'sin.txt' ], NT, 'DEC' );
+NT = numerictype( cosCrd );
+cosHdl = txtFileRead( [ fpathSim 'cos.txt' ], NT, 'DEC' );
+sinHdl = txtFileRead( [ fpathSim 'sin.txt' ], NT, 'DEC' );
 
 if ( length( cosCrd ) == length( cosHdl ) )
     fprintf( 'length is equal = %i\n', length( cosCrd ) );
