@@ -1,6 +1,6 @@
 % CORDIC magnitude/phase algorithm
 clc; clear; close all;
-addpath( 'func' );
+addpath('func');
 
 fpathSim = '..\sim\';
 fpathModelsim  = 'D:\CADS\Modelsim10_1c\win32\modelsim.exe';
@@ -12,130 +12,126 @@ XY_WDT      = 18; % width of x/y inputs
 % x/y inputs
 x = -1 : 1e-2 : 1;
 y = -1 : 1e-2 : 1;
-x = repmat( x', 1, length( y ) )';
-x = x( : )';
-y = repmat( y, 1, length( x ) / length( y ) );
-x = sfi( x, XY_WDT, XY_WDT - 1 );
-y = sfi( y, XY_WDT, XY_WDT - 1 );
+x = repmat(x', 1, length(y))';
+x = x(:)';
+y = repmat(y, 1, length(x) / length(y));
+x = sfi(x, XY_WDT, XY_WDT - 1);
+y = sfi(y, XY_WDT, XY_WDT - 1);
 
-if ( ~CORDIC_TYPE )
-    fprintf( 'CORDIC_TYPE = "SERIAL"\n' );
+if (~CORDIC_TYPE)
+    fprintf('CORDIC_TYPE = "SERIAL"\n');
 else
-    fprintf( 'CORDIC_TYPE = "PARALLEL"\n' );
+    fprintf('CORDIC_TYPE = "PARALLEL"\n');
 end
-fprintf( 'CORDIC_N = %i\n', CORDIC_N );
-fprintf( 'XY_WDT   = %i\n', XY_WDT );
+fprintf('CORDIC_N = %i\n', CORDIC_N);
+fprintf('XY_WDT   = %i\n', XY_WDT);
 
 % double
 tic;
-magMat = abs( double( x ) + 1j * double( y ) );
-phMat  = angle( double( x ) + 1j * double( y ) ) / ( pi / 2 );
-timeMat = toc;
+magDouble = abs(double(x) + 1j * double(y));
+phDouble  = angle(double(x) + 1j * double(y)) / (pi / 2);
+timeDouble = toc;
 % cordic fast
 tic;
-[ magCrd, phCrd ] = cordicMagPhFast( x, y, CORDIC_N );
-timeCrd = toc;
-fprintf( 'time for matlab algorithm ( double    ) = %f s\n', timeMat );
-fprintf( 'time for cordic algorithm ( integer   ) = %f s\n', timeCrd );
+[magCordicFast, phCordicFast] = cordicMagPhFast(x, y, CORDIC_N);
+timeCordicFast = toc;
+fprintf('Calculation time for built-in algorithm (with double ) = %f s.\n', timeDouble);
+fprintf('Calculation time for CORDIC   algorithm (with integer) = %f s.\n', timeCordicFast);
 % plot compare
-if ( false )
+if (true)
     figure;
-    subplot( 2, 1, 1 );
-    plot( 1 : length( magMat ), magMat, 1 : length( magCrd ), magCrd );
-    title( 'magnitude' );
-    legend( 'double', 'cordic' );
+    subplot(2, 1, 1);
+    plot(1 : length(magDouble), magDouble, 1 : length(magCordicFast), magCordicFast);
+    title('magnitude');
+    legend('double built-in', 'CORDIC' );
     grid on;
-    subplot( 2, 1, 2 );
-    plot( abs( magMat - double( magCrd ) ) );
-    title( 'abs error' );
-    line( [ 1 length( magCrd ) ], [ eps( magCrd ) eps( magCrd ) ], ...
-          'LineWidth', 2, 'Color', 'red' );
+    subplot(2, 1, 2);
+    plot(abs(magDouble - double(magCordicFast)));
+    title('abs error');
+    line([1 length(magCordicFast)], [eps(magCordicFast) eps(magCordicFast)], 'LineWidth', 2, 'Color', 'red');
     grid on;    
 
     figure;
-    subplot( 2, 1, 1 );
-    plot( 1 : length( phMat ), phMat, 1 : length( phCrd ), phCrd );
-    title( 'phase' );
-    legend( 'double', 'cordic' );
+    subplot(2, 1, 1);
+    plot(1 : length(phDouble), phDouble, 1 : length(phCordicFast), phCordicFast);
+    title('phase');
+    legend('double built-in', 'CORDIC');
     grid on;
-    subplot( 2, 1, 2 );
-    plot( abs( phMat - double( phCrd ) ) );
-    title( 'abs error' );
-    line( [ 1 length( phCrd ) ], [ eps( phCrd ) eps( phCrd ) ], ...
-          'LineWidth', 2, 'Color', 'red' );
+    subplot(2, 1, 2);
+    plot(abs(phDouble - double(phCordicFast)));
+    title('abs error');
+    line([1 length(phCordicFast)], [eps(phCordicFast) eps(phCordicFast)], 'LineWidth', 2, 'Color', 'red');
     grid on;   
 end
 
-% check cordic slow version ( with fi objects ) if needed
-if ( false )
+% check CORDIC slow version with fi objects if required
+if (true)
     tic;
-    [ magSlow, phSlow ] = cordicMagPhSlow( x, y, CORDIC_N );
+    [magCordicSlow, phCordicSlow] = cordicMagPhSlow(x , y, CORDIC_N);
     timeSlow = toc;
-    fprintf( 'time for cordic algorithm ( fi object ) = %f s\n', timeSlow );
-    if ( any( magSlow ~= magCrd ) )
-        warning( 'Outputs of fast and slow magnitude cordic algorithms arent equal' );
+    fprintf('Calculation time for CORDIC   algorithm (fi object   ) = %f s.\n', timeSlow);
+    if (any(magCordicSlow ~= magCordicFast))
+        warning( 'Outputs of fast and slow magnitude CORDIC algorithms are not equal.');
     end
-    if ( any( phSlow ~= phCrd ) )
-        warning( 'Outputs of fast and slow phase cordic algorithms arent equal' );
+    if (any(phCordicSlow ~= phCordicFast))
+        warning( 'Outputs of fast and slow phase CORDIC algorithms are not equal.');
     end
 end
 
 %% create data for testbench
 % file with parms
-fileID = fopen( [ fpathSim 'parms.vh' ], 'wt' );
-fprintf( fileID, '// Automatically generated with Matlab, dont edit\n' );
-if ( ~CORDIC_TYPE )
-    fprintf( fileID, 'localparam string CORDIC_TYPE = "SERIAL";\n' );
+fileID = fopen([fpathSim 'parms.vh'], 'wt');
+fprintf(fileID, '// Automatically generated with Matlab, do not edit\n');
+if (~CORDIC_TYPE)
+    fprintf(fileID, 'localparam string CORDIC_TYPE = "SERIAL";\n');
 else
-    fprintf( fileID, 'localparam string CORDIC_TYPE = "PARALLEL";\n' );
+    fprintf(fileID, 'localparam string CORDIC_TYPE = "PARALLEL";\n');
 end
-fprintf( fileID, 'localparam int N      = %i,\n', CORDIC_N );
-fprintf( fileID, '               XY_WDT = %i;\n', XY_WDT );
-fclose( fileID );
+fprintf(fileID, 'localparam int N      = %i,\n', CORDIC_N);
+fprintf(fileID, '               XY_WDT = %i;\n', XY_WDT);
+fclose(fileID);
 % files with x/y
-txtFileWrite( [ fpathSim 'xin.txt' ], x, 'DEC' );
-txtFileWrite( [ fpathSim 'yin.txt' ], y, 'DEC' );
+txtFileWrite([fpathSim 'xin.txt'], x, 'DEC');
+txtFileWrite([fpathSim 'yin.txt'], y, 'DEC');
 %% autorun Modelsim
-if ( exist( [ fpathSim 'flag.txt' ], 'file' ) )
-     delete( [ fpathSim 'flag.txt' ] );
-end;
-status = system( [ fpathModelsim ' -do ' fpathSim 'autoMagPh.do' ] );
+if (exist([fpathSim 'flag.txt'], 'file'))
+     delete([fpathSim 'flag.txt']);
+end
+status = system([fpathModelsim ' -do ' fpathSim 'autoMagPh.do']);
 pause on;
-while ( ~exist( [ fpathSim 'flag.txt' ], 'file' ) ) % wait for flag file
-    pause( 1 );
-end;
+while (~exist([fpathSim 'flag.txt'], 'file')) % wait for flag file
+    pause(1);
+end
 
 %% read data from testbench
-NT = numerictype( magCrd );
-magHdl = txtFileRead( [ fpathSim 'mag.txt' ], NT, 'DEC' );
-NT = numerictype( phCrd );
-phHdl  = txtFileRead( [ fpathSim 'ph.txt' ], NT, 'DEC'  );
+NT = numerictype(magCordicFast);
+magHdl = txtFileRead([fpathSim 'mag.txt'], NT, 'DEC');
+NT = numerictype(phCordicFast);
+phHdl  = txtFileRead([fpathSim 'ph.txt'], NT, 'DEC');
 
-if ( length( magCrd ) == length( magHdl ) )
-    fprintf( 'length is equal = %i\n', length( magCrd ) );
-    x = 1 : length( magCrd );    
-elseif ( length( magCrd ) > length( magHdl ) )
-    fprintf( 'length isnt equal, matlab = %i, hdl = %i\n', ...
-        length( magCrd ), length( magHdl ) );
-    x = 1 : length( magHdl );
+if (length(magCordicFast) == length(magHdl))
+    fprintf('Length is equal = %i.\n', length(magCordicFast));
+    x = 1 : length(magCordicFast);    
+elseif (length(magCordicFast) > length(magHdl))
+    fprintf('Length is not equal, matlab = %i, hdl = %i.\n', length(magCordicFast), length(magHdl));
+    x = 1 : length(magHdl);
 else
-    fprintf( 'length isnt equal, matlab = %i, hdl = %i\n', ...
-    length( magCrd ), length( magHdl ) );
-    x = 1 : length( magCrd );
-end;
+    fprintf('Length is not equal, matlab = %i, hdl = %i.\n', length(magCordicFast), length(magHdl));
+    x = 1 : length(magCordicFast);
+end
 
-fprintf( 'num of errors for mag : %i\n', sum( magCrd( x ) ~= magHdl( x ) ) );
-fprintf( 'num of errors for ph  : %i\n', sum( phCrd( x )  ~= phHdl( x ) ) );
-if ( true )
+fprintf('Number of errors for mag: %i.\n', sum(magCordicFast(x) ~= magHdl(x)));
+fprintf('Number of errors for ph : %i.\n', sum(phCordicFast(x) ~= phHdl(x)));
+if (true)
     figure;
-    subplot( 2, 1, 1 );
-    plot( x, magCrd( x ), x, magHdl( x ) );
-    title( 'mag' );
-    legend( 'matlab', 'hdl' );
+    subplot(2, 1, 1);
+    plot(x, magCordicFast(x), x, magHdl(x));
+    title('mag');
+    legend('matlab', 'hdl');
     grid on;    
-    subplot( 2, 1, 2 );
-    plot( x, phCrd( x ), x, phHdl( x ) );
-    title( 'ph' );
-    legend( 'matlab', 'hdl' );
+    subplot(2, 1, 2);
+    plot(x, phCordicFast(x), x, phHdl(x));
+    title('ph');
+    legend('matlab', 'hdl');
     grid on; 
 end

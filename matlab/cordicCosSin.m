@@ -1,138 +1,134 @@
 % CORDIC cosine/sine algorithm
 clc; clear; close all;
-addpath( 'func' );
+addpath('func');
 
 fpathSim = '..\sim\';
-fpathModelsim  = 'D:\CADS\Modelsim10_1c\win32\modelsim.exe';
+fpathModelsim = 'D:\CADS\Modelsim10_1c\win32\modelsim.exe';
 
 CORDIC_TYPE = 1;  % for testbench - '0' for "SERIAL", '1' for "PARALLEL"
 CORDIC_N    = 13; % number of iterations for CORDIC algorithm
 PHI_WDT     = 18; % width of input angle phi (outputs is same width)  
 
 % input angle phi
-Npoints = 1.0e3;  % number of points
-phiSign = 0;      % - '0' for unsigned, '1' for signed
-phi = linspace( 0, 1, Npoints );
+Npoints = 1.0e3;  % number of points for test
+phiSign = 0;      % - '0' for unsigned format, '1' for signed format
+phi = linspace(0, 1, Npoints);
 phi = phi - phiSign * 0.5;
-phi = fi( phi, phiSign, PHI_WDT, PHI_WDT );
+phi = fi(phi, phiSign, PHI_WDT, PHI_WDT);
 
-if ( ~CORDIC_TYPE )
-    fprintf( 'CORDIC_TYPE = "SERIAL"\n' );
+if (~CORDIC_TYPE)
+    fprintf('CORDIC_TYPE = "SERIAL"\n');
 else
-    fprintf( 'CORDIC_TYPE = "PARALLEL"\n' );
+    fprintf('CORDIC_TYPE = "PARALLEL"\n');
 end
-fprintf( 'CORDIC_N = %i\n', CORDIC_N );
-fprintf( 'PHI_WDT  = %i\n', PHI_WDT );
+fprintf('CORDIC_N = %i\n', CORDIC_N);
+fprintf('PHI_WDT  = %i\n', PHI_WDT);
 
-% double
+% double built-in
 tic;
-cosMat = cos( double( phi ) * 2 * pi );
-sinMat = sin( double( phi ) * 2 * pi );
-timeMat = toc;
-% cordic fast
+cosDouble = cos(double(phi) * 2 * pi);
+sinDouble = sin(double(phi) * 2 * pi);
+timeDouble = toc;
+% CORDIC fast
 tic;
-[ cosCrd, sinCrd ] = cordicCosSinFast( phi, CORDIC_N );
-timeCrd = toc;
-fprintf( 'time for matlab algorithm ( double    ) = %f s\n', timeMat );
-fprintf( 'time for cordic algorithm ( integer   ) = %f s\n', timeCrd );
+[cosCordicFast, sinCordicFast] = cordicCosSinFast(phi, CORDIC_N);
+timeCordicFast = toc;
+fprintf('Calculation time for built-in algorithm (with double ) = %f s.\n', timeDouble);
+fprintf('Calculation time for CORDIC   algorithm (with integer) = %f s.\n', timeCordicFast);
 
 % plot compare
-if ( true )
+if (true)
     figure;
-    subplot( 2, 1, 1 );
-    plot( phi, cosMat, phi, cosCrd );
-    title( 'cos' );
-    legend( 'double', 'cordic' );
+    subplot(2, 1, 1);
+    plot(phi, cosDouble, phi, cosCordicFast);
+    title('cos');
+    legend('double built-in', 'CORDIC');
     grid on;
-    subplot( 2, 1, 2 );
-    plot( phi, abs( cosMat - double( cosCrd ) ) );
-    title( 'abs error' );
-    line( [ phi( 1 ) phi( end ) ], [ eps( cosCrd ) eps( cosCrd ) ], ...
-          'LineWidth', 2, 'Color', 'red' );
+    subplot(2, 1, 2);
+    plot(phi, abs(cosDouble - double(cosCordicFast)));
+    title('abs error');
+    line([phi(1) phi(end)], [eps(cosCordicFast) eps(cosCordicFast)], 'LineWidth', 2, 'Color', 'red');
     grid on;    
 
     figure;
-    subplot( 2, 1, 1 );
-    plot( phi, sinMat, phi, sinCrd );
-    title( 'sin' );
-    legend( 'double', 'cordic' );
+    subplot(2, 1, 1);
+    plot(phi, sinDouble, phi, sinCordicFast);
+    title('sin');
+    legend('double built-in', 'CORDIC');
     grid on;
-    subplot( 2, 1, 2 );
-    plot( phi, abs( sinMat - double( sinCrd ) ) );
-    title( 'abs error' );
-    line( [ phi( 1 ) phi( end ) ], [ eps( sinCrd ) eps( sinCrd ) ], ...
-          'LineWidth', 2, 'Color', 'red' );
+    subplot(2, 1, 2);
+    plot(phi, abs(sinDouble - double(sinCordicFast)));
+    title('abs error');
+    line([phi(1) phi(end)], [eps(sinCordicFast) eps(sinCordicFast)], 'LineWidth', 2, 'Color', 'red' );
     grid on;   
 end
 
-% check cordic slow version ( with fi objects ) if needed
-if ( true )
+% check CORDIC slow version with fi objects if required
+if (true)
     tic;
-    [ cosSlow, sinSlow ] = cordicCosSinSlow( phi, CORDIC_N );
-    timeSlow = toc;
-    fprintf( 'time for cordic algorithm ( fi object ) = %f s\n', timeSlow );
-    if ( any( cosSlow ~= cosCrd ) )
-        warning( 'Outputs of fast and slow cosine cordic algorithms arent equal' );
+    [cosCordicSlow, sinCordicSlow] = cordicCosSinSlow(phi, CORDIC_N);
+    timeCordicSlow = toc;
+    fprintf('Calculation time for CORDIC   algorithm (fi object   ) = %f s.\n', timeCordicSlow);
+    if (any(cosCordicSlow ~= cosCordicFast))
+        warning('Results of fast and slow cosine CORDIC algorithms are not equal.');
     end
-    if ( any( sinSlow ~= sinCrd ) )
-        warning( 'Outputs of fast and slow sine cordic algorithms arent equal' );
+    if (any(sinCordicSlow ~= sinCordicFast))
+        warning('Results of fast and slow sine CORDIC algorithms are not equal.');
     end
 end
 %% create data for testbench
 % file with parms
-fileID = fopen( [ fpathSim 'parms.vh' ], 'wt' );
-fprintf( fileID, '// Automatically generated with Matlab, dont edit\n' );
-if ( ~CORDIC_TYPE )
-    fprintf( fileID, 'localparam string CORDIC_TYPE = "SERIAL";\n' );
+fileID = fopen([fpathSim 'parms.vh'], 'wt');
+fprintf(fileID, '// Automatically generated with Matlab, do not edit\n' );
+if (~CORDIC_TYPE)
+    fprintf(fileID, 'localparam string CORDIC_TYPE = "SERIAL";\n');
 else
-    fprintf( fileID, 'localparam string CORDIC_TYPE = "PARALLEL";\n' );
+    fprintf(fileID, 'localparam string CORDIC_TYPE = "PARALLEL";\n');
 end
-fprintf( fileID, 'localparam int N       = %i,\n', CORDIC_N );
-fprintf( fileID, '               PHI_WDT = %i;\n', PHI_WDT );
-fclose( fileID );
+fprintf(fileID, 'localparam int N       = %i,\n', CORDIC_N);
+fprintf(fileID, '               PHI_WDT = %i;\n', PHI_WDT);
+fclose(fileID);
 % file with phi
-txtFileWrite( [ fpathSim 'phi.txt' ], phi, 'DEC' );
+txtFileWrite([fpathSim 'phi.txt'], phi, 'DEC');
 
 %% autorun Modelsim
-if ( exist( [ fpathSim 'flag.txt' ], 'file' ) )
-     delete( [ fpathSim 'flag.txt' ] );
-end;
-status = system( [ fpathModelsim ' -do ' fpathSim 'autoCosSin.do' ] );
+if (exist([fpathSim 'flag.txt'], 'file'))
+    delete([fpathSim 'flag.txt']);
+end
+status = system([fpathModelsim ' -do ' fpathSim 'autoCosSin.do']);
 pause on;
-while ( ~exist( [ fpathSim 'flag.txt' ], 'file' ) ) % wait for flag file
-    pause( 1 );
-end;
+while (~exist([fpathSim 'flag.txt'], 'file')) % wait for flag file
+    pause(1);
+end
 
 %% read data from testbench
-NT = numerictype( cosCrd );
-cosHdl = txtFileRead( [ fpathSim 'cos.txt' ], NT, 'DEC' );
-sinHdl = txtFileRead( [ fpathSim 'sin.txt' ], NT, 'DEC' );
+NT = numerictype(cosCordicFast);
+cosHdl = txtFileRead([fpathSim 'cos.txt'], NT, 'DEC');
+sinHdl = txtFileRead([fpathSim 'sin.txt'], NT, 'DEC');
 
-if ( length( cosCrd ) == length( cosHdl ) )
-    fprintf( 'length is equal = %i\n', length( cosCrd ) );
-    x = 1 : length( cosCrd );    
-elseif ( length( cosCrd ) > length( cosHdl ) )
-    fprintf( 'length isnt equal, matlab = %i, hdl = %i\n', ...
-        length( cosCrd ), length( cosHdl ) );
-    x = 1 : length( cosHdl );
+if (length(cosCordicFast) == length(cosHdl))
+    fprintf('Length is equal = %i\n.', length(cosCordicFast));
+    x = 1 : length(cosCordicFast);    
+elseif (length(cosCordicFast) > length(cosHdl))
+    fprintf('Length is not equal, matlab = %i, hdl = %i.\n', length(cosCordicFast), length(cosHdl));
+    x = 1 : length(cosHdl);
 else
-    fprintf( 'length isnt equal, matlab = %i, hdl = %i\n', ...
-    length( cosCrd ), length( cosHdl ) );
-    x = 1 : length( cosCrd );
-end;
+    fprintf('Length is not equal, matlab = %i, hdl = %i.\n', length(cosCordicFast), length(cosHdl));
+    x = 1 : length(cosCordicFast);
+end
 
-fprintf( 'num of errors for cos: %i\n', sum( cosCrd( x ) ~= cosHdl( x ) ) );
-fprintf( 'num of errors for sin: %i\n', sum( sinCrd( x ) ~= sinHdl( x ) ) );
-if ( true )
+fprintf('Number of errors for cos: %i.\n', sum(cosCordicFast(x) ~= cosHdl(x)));
+fprintf('Number of errors for sin: %i.\n', sum(sinCordicFast(x) ~= sinHdl(x)));
+if (true)
     figure;
-    subplot( 2, 1, 1 );
-    plot( phi( x ), cosCrd( x ), phi( x ), cosHdl( x ) );
-    title( 'cos' );
-    legend( 'matlab', 'hdl' );
+    subplot(2, 1, 1);
+    plot(phi(x), cosCordicFast(x), phi(x), cosHdl(x));
+    title('cos');
+    legend('matlab', 'hdl');
     grid on;    
     subplot( 2, 1, 2 );
-    plot( phi( x ), sinCrd( x ), phi( x ), sinHdl( x ) );
-    title( 'sin' );
-    legend( 'matlab', 'hdl' );
-    grid on; 
+    plot(phi(x), sinCordicFast(x), phi(x), sinHdl(x));
+    title('sin');
+    legend('matlab', 'hdl');
+    grid on;
 end

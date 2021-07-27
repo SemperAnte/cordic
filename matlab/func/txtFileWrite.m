@@ -1,5 +1,5 @@
-function txtFileWrite( fname, data, dataRad, num )
-% function txtFileWrite( fname, data, dataRad, num )
+function txtFileWrite(fname, data, dataRad, num)
+% function txtFileWrite(fname, data, dataRad, num)
 %
 % fname    - file name
 % data     - data, fi object (or double for 'DBL' dataRad)
@@ -9,52 +9,53 @@ function txtFileWrite( fname, data, dataRad, num )
 % specify default radix
 if ( nargin < 3 )
     dataRad = 'UNS';            
-end;
+end
+
 % specify number of elements
-if ( nargin > 3 )
-    if ( num > length( data ) ) % adding zeros
-        data( end + 1 : num ) = 0;
+if (nargin > 3)
+    if (num > length(data)) % adding zeros
+        data(end + 1 : num) = 0;
     else                    % cutting
-        data = data( 1 : num );
-    end;
+        data = data(1 : num);
+    end
 else
-    num = length( data );
-end;
+    num = length(data);
+end
 
 % data string
-ds = cell( 1, num );
+ds = cell(1, num);
 switch dataRad
     case 'BIN'
         for i = 1 : num
-            t = data( i );
-            ds{ i } = t.bin;
-        end;
+            t = data(i);
+            ds{i} = t.bin;
+        end
     case 'HEX'
         for i = 1 : num
-            t = data( i );
-            ds{ i } = t.hex;
-        end;
+            t = data(i);
+            ds{i} = t.hex;
+        end
     case 'UNS'
         for i = 1 : num
-            t = data( i );
-            ds{ i } = t.dec;
-        end;
+            t = data(i);
+            ds{i} = t.dec;
+        end
     case 'DEC'
         for i = 1 : num
-            t = data( i );
-            ds{ i } = num2str( t.int, '%i' );
-        end;
+            t = data(i);
+            ds{i} = num2str(t.int, '%i');
+        end
     case 'DBL'
         for i = 1 : num
-            ds{ i } = num2str( data( i ) );
-        end;
+            ds{i} = num2str(data(i));
+        end
     otherwise
-        error( 'Not correct data radix!' );
-end;
+        error('Not correct data radix!');
+end
 
-fileID = fopen( fname, 'wt' );
+fileID = fopen(fname, 'wt');
 for i = 1 : num
-    fprintf( fileID, ds{ i } );   
-    fprintf( fileID, '\n' );
-end;
-fclose( fileID );
+    fprintf(fileID, ds{i});   
+    fprintf(fileID, '\n');
+end
+fclose(fileID);
