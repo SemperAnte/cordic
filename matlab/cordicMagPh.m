@@ -1,4 +1,12 @@
+%--------------------------------------------------------------------------------
+% Project:       dsplib
+% Author:        Shustov Aleksey (SemperAnte), semte@semte.ru
+% History:
+%    14.11.2016 - created
+%    27.07.2021 - minor refactoring
+%--------------------------------------------------------------------------------
 % CORDIC magnitude/phase algorithm
+%--------------------------------------------------------------------------------
 clc; clear; close all;
 addpath('func');
 

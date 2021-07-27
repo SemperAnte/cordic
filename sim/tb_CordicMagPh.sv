@@ -72,9 +72,9 @@ module tb_cordicMagPh();
         static int flagFile;
       
         if (!xinFile)
-            $display( "Cant open file xin.txt".);
+            $display( "Cant open file xin.txt.");
         if (!yinFile)
-            $display( "Cant open file yin.txt".);
+            $display( "Cant open file yin.txt.");
         if (!xinFile || !yinFile)
             $stop;
       
@@ -83,7 +83,7 @@ module tb_cordicMagPh();
         yin = '0;
       
         if (CORDIC_TYPE == "SERIAL") begin
-            wait ( rdy );
+            wait (rdy);
             @(negedge clk);
             while (!$feof(xinFile) || !$feof(yinFile)) begin         
                 st = 1'b1;
@@ -102,7 +102,7 @@ module tb_cordicMagPh();
             yin = '0;             
             #(10 * T);    
         
-        // complete it!!!
+        // finish it!!!
         /*end else if (CORDIC_TYPE == "PARALLEL") begin
             bit eof = 1'b0;
          @ ( negedge reset );

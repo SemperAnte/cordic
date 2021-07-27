@@ -1,9 +1,21 @@
+%--------------------------------------------------------------------------------
+% Project:       dsplib
+% Author:        Shustov Aleksey (SemperAnte), semte@semte.ru
+% History:
+%    14.11.2016 - created
+%    27.07.2021 - minor refactoring
+%--------------------------------------------------------------------------------
 % CORDIC cosine/sine algorithm
+%--------------------------------------------------------------------------------
 clc; clear; close all;
 addpath('func');
 
 fpathSim = '..\sim\';
-fpathModelsim = 'D:\CADS\Modelsim10_1c\win32\modelsim.exe';
+fpathModelsim = 'D:\C*ADS\Modelsim10_1c\win32\modelsim.exe';
+fpathLUT = '..\rtl\cordicLUT.vh';
+
+comparePlot = false; % compare CORDIC results with double precision
+checkSlow = false;
 
 CORDIC_TYPE = 1;  % for testbench - '0' for "SERIAL", '1' for "PARALLEL"
 CORDIC_N    = 13; % number of iterations for CORDIC algorithm
@@ -24,7 +36,10 @@ end
 fprintf('CORDIC_N = %i\n', CORDIC_N);
 fprintf('PHI_WDT  = %i\n', PHI_WDT);
 
-% double built-in
+% generate LUT for atan/coefd
+generateCordicLUT(fpathLUT);
+
+% double precision
 tic;
 cosDouble = cos(double(phi) * 2 * pi);
 sinDouble = sin(double(phi) * 2 * pi);
@@ -37,7 +52,7 @@ fprintf('Calculation time for built-in algorithm (with double ) = %f s.\n', time
 fprintf('Calculation time for CORDIC   algorithm (with integer) = %f s.\n', timeCordicFast);
 
 % plot compare
-if (true)
+if (comparePlot)
     figure;
     subplot(2, 1, 1);
     plot(phi, cosDouble, phi, cosCordicFast);
@@ -64,7 +79,7 @@ if (true)
 end
 
 % check CORDIC slow version with fi objects if required
-if (true)
+if (checkSlow)
     tic;
     [cosCordicSlow, sinCordicSlow] = cordicCosSinSlow(phi, CORDIC_N);
     timeCordicSlow = toc;

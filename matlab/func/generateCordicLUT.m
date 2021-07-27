@@ -1,8 +1,9 @@
-% create file with LUT tables for atan and coefd
-% include this to CORDIC rtl project
-clc; clear;
-
-filePath = '..\rtl\cordicLUT.vh';
+function generateCordicLUT(fpathLUT)
+% function generateCordicLUT(fpathLUT)
+%
+% generate file with LUT tables for atan and coefd
+% include this file to CORDIC rtl project
+% fpathLUT - path to LUT .vh file
 
 % LUT table for arctangent
 maxSizeLUT = 64;
@@ -22,14 +23,14 @@ for i = 0 : maxSizeLUT - 1
 end
 
 % generate code file
-fileID = fopen(filePath, 'wt');
-fprintf(fileID, '// full LUT tables for atan and coefd\n');
-fprintf(fileID, '// Automatically generated with Matlab, dont edit\n');
+fileID = fopen(fpathLUT, 'wt');
+fprintf(fileID, '// total LUT tables for atan and coefd\n');
+fprintf(fileID, '// Automatically generated with Matlab, do not edit\n');
 fprintf(fileID, 'localparam logic [63 : 0] atanLUTtotal [%i] = ''{\n', length(atanLUTtotal));
 for i = 1 : length(atanLUTtotal)
     fprintf(fileID, '      64''d%i', atanLUTtotal(i));
     if (i == length(atanLUTtotal))
-        fprintf(fileID, ' };\n');
+        fprintf(fileID, '};\n');
     else
         fprintf(fileID, ',\n');
     end
@@ -39,7 +40,7 @@ fprintf(fileID, 'localparam logic [63 : 0] coefdLUTtotal [%i] = ''{\n', length(c
 for i = 1 : length(coefdLUTtotal)
     fprintf(fileID, '      64''d%i', coefdLUTtotal(i));
     if (i == length(coefdLUTtotal))
-        fprintf(fileID, ' };');
+        fprintf(fileID, '};');
     else
         fprintf(fileID, ',\n');
     end

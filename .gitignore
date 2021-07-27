@@ -33,6 +33,7 @@ rtl
 !rtl/**/*.sv
 !rtl/**/*.v
 !rtl/**/*.vh
+rtl/**/cordicLUT.vh
 !rtl/**/*.vhd
 
 sim
