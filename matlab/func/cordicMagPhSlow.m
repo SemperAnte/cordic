@@ -5,7 +5,7 @@ function [magCordic, phCordic] = cordicMagPhSlow(xCordic, yCordic, N)
 % slow version with fixed point for hdl code development
 %
 % xCordic, yCordic  - x, y coordinate, signed fi, must be same width
-% N           - number of iterations
+% N                 - number of iterations
 
 assert(xCordic.WordLength == yCordic.WordLength, 'X and Y coordinates must be same width');
 XY_WDT = xCordic.WordLength;

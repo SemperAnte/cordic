@@ -5,17 +5,21 @@
 %    14.11.2016 - created
 %    27.07.2021 - minor refactoring
 %--------------------------------------------------------------------------------
-% CORDIC magnitude/phase algorithm
+% calculation of magnitude/phase with CORDIC algorithm
 %--------------------------------------------------------------------------------
 clc; clear; close all;
 addpath('func');
 
 fpathSim = '..\sim\';
 fpathModelsim  = 'D:\CADS\Modelsim10_1c\win32\modelsim.exe';
+fpathLUT = '..\rtl\cordicLUT.vh';
 
 CORDIC_TYPE = 0;  % for testbench - '0' for "SERIAL", '1' for "PARALLEL"
 CORDIC_N    = 13; % number of iterations for CORDIC algorithm
 XY_WDT      = 18; % width of x/y inputs
+
+comparePlot = false; % compare CORDIC results with double precision
+checkSlow = false;   % run slow version of algorithm and compare it with fast
 
 % x/y inputs
 x = -1 : 1e-2 : 1;
@@ -34,7 +38,10 @@ end
 fprintf('CORDIC_N = %i\n', CORDIC_N);
 fprintf('XY_WDT   = %i\n', XY_WDT);
 
-% double
+% generate LUT for atan/coefd
+generateCordicLUT(fpathLUT);
+
+% double precision
 tic;
 magDouble = abs(double(x) + 1j * double(y));
 phDouble  = angle(double(x) + 1j * double(y)) / (pi / 2);
@@ -43,10 +50,10 @@ timeDouble = toc;
 tic;
 [magCordicFast, phCordicFast] = cordicMagPhFast(x, y, CORDIC_N);
 timeCordicFast = toc;
-fprintf('Calculation time for built-in algorithm (with double ) = %f s.\n', timeDouble);
-fprintf('Calculation time for CORDIC   algorithm (with integer) = %f s.\n', timeCordicFast);
+fprintf('Estimated time for double      algorithm (with double ) = %f s.\n', timeDouble);
+fprintf('Estimated time for CORDIC fast algorithm (with integer) = %f s.\n', timeCordicFast);
 % plot compare
-if (true)
+if (comparePlot)
     figure;
     subplot(2, 1, 1);
     plot(1 : length(magDouble), magDouble, 1 : length(magCordicFast), magCordicFast);
@@ -73,11 +80,11 @@ if (true)
 end
 
 % check CORDIC slow version with fi objects if required
-if (true)
+if (checkSlow)
     tic;
     [magCordicSlow, phCordicSlow] = cordicMagPhSlow(x , y, CORDIC_N);
     timeSlow = toc;
-    fprintf('Calculation time for CORDIC   algorithm (fi object   ) = %f s.\n', timeSlow);
+    fprintf('Estimated time for CORDIC slow algorithm (fi object   ) = %f s.\n', timeSlow);
     if (any(magCordicSlow ~= magCordicFast))
         warning( 'Outputs of fast and slow magnitude CORDIC algorithms are not equal.');
     end

@@ -24,9 +24,9 @@ end
 
 % generate code file
 fileID = fopen(fpathLUT, 'wt');
-fprintf(fileID, '// total LUT tables for atan and coefd\n');
+fprintf(fileID, '// long LUT tables for atan and coefd\n');
 fprintf(fileID, '// Automatically generated with Matlab, do not edit\n');
-fprintf(fileID, 'localparam logic [63 : 0] atanLUTtotal [%i] = ''{\n', length(atanLUTtotal));
+fprintf(fileID, 'localparam logic [63 : 0] atanLUTlong [%i] = ''{\n', length(atanLUTtotal));
 for i = 1 : length(atanLUTtotal)
     fprintf(fileID, '      64''d%i', atanLUTtotal(i));
     if (i == length(atanLUTtotal))
@@ -36,7 +36,7 @@ for i = 1 : length(atanLUTtotal)
     end
 end
 fprintf(fileID, '\n');
-fprintf(fileID, 'localparam logic [63 : 0] coefdLUTtotal [%i] = ''{\n', length(coefdLUTtotal));
+fprintf(fileID, 'localparam logic [63 : 0] coefdLUTlong [%i] = ''{\n', length(coefdLUTtotal));
 for i = 1 : length(coefdLUTtotal)
     fprintf(fileID, '      64''d%i', coefdLUTtotal(i));
     if (i == length(coefdLUTtotal))

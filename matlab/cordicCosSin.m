@@ -5,7 +5,7 @@
 %    14.11.2016 - created
 %    27.07.2021 - minor refactoring
 %--------------------------------------------------------------------------------
-% CORDIC cosine/sine algorithm
+% calculation of cosine/sine with CORDIC algorithm
 %--------------------------------------------------------------------------------
 clc; clear; close all;
 addpath('func');
@@ -15,7 +15,7 @@ fpathModelsim = 'D:\C*ADS\Modelsim10_1c\win32\modelsim.exe';
 fpathLUT = '..\rtl\cordicLUT.vh';
 
 comparePlot = false; % compare CORDIC results with double precision
-checkSlow = false;
+checkSlow = false;   % run slow version of algorithm and compare it with fast
 
 CORDIC_TYPE = 1;  % for testbench - '0' for "SERIAL", '1' for "PARALLEL"
 CORDIC_N    = 13; % number of iterations for CORDIC algorithm
@@ -48,8 +48,8 @@ timeDouble = toc;
 tic;
 [cosCordicFast, sinCordicFast] = cordicCosSinFast(phi, CORDIC_N);
 timeCordicFast = toc;
-fprintf('Calculation time for built-in algorithm (with double ) = %f s.\n', timeDouble);
-fprintf('Calculation time for CORDIC   algorithm (with integer) = %f s.\n', timeCordicFast);
+fprintf('Estimated time for double      algorithm (with double ) = %f s.\n', timeDouble);
+fprintf('Estimated time for CORDIC fast algorithm (with integer) = %f s.\n', timeCordicFast);
 
 % plot compare
 if (comparePlot)
@@ -83,7 +83,7 @@ if (checkSlow)
     tic;
     [cosCordicSlow, sinCordicSlow] = cordicCosSinSlow(phi, CORDIC_N);
     timeCordicSlow = toc;
-    fprintf('Calculation time for CORDIC   algorithm (fi object   ) = %f s.\n', timeCordicSlow);
+    fprintf('Estimated time for CORDIC slow algorithm (fi object   ) = %f s.\n', timeCordicSlow);
     if (any(cosCordicSlow ~= cosCordicFast))
         warning('Results of fast and slow cosine CORDIC algorithms are not equal.');
     end
