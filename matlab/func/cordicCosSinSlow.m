@@ -8,38 +8,30 @@ function [cosCordic, sinCordic] = cordicCosSinSlow(phi, N)
 %                      signed fi [-pi(1000..) ...   pi(0111..))
 % N   - number of iterations
 
-PHI_WDT = phi.WordLength;
+PHI_WIDTH = phi.WordLength;
 % convert to unsigned
-phi = reinterpretcast(phi, numerictype(0, PHI_WDT, PHI_WDT));
+phi = reinterpretcast(phi, numerictype(0, PHI_WIDTH, PHI_WIDTH));
 
 % lut table for arctangent
 atanlut = int64(zeros(1, N));
 for i = 1 : N
    atanlut(i) = atand(2 ^ (-(i - 1))) / 90 * 2 ^ 62; 
-   atanlut(i) = bitshift(atanlut(i), -(62 - PHI_WDT + 2));   
+   atanlut(i) = bitshift(atanlut(i), -(62 - PHI_WIDTH + 2));   
 end
-atanlut = fi(atanlut, numerictype(0, PHI_WDT - 2, 0));
-atanlut = reinterpretcast(atanlut, numerictype(0, PHI_WDT - 2, PHI_WDT - 2)); 
+atanlut = fi(atanlut, numerictype(0, PHI_WIDTH - 2, 0));
+atanlut = reinterpretcast(atanlut, numerictype(0, PHI_WIDTH - 2, PHI_WIDTH - 2)); 
 % coefficient of deformation value
 coefd = 1;
 for i = 0 : N - 1
     coefd = coefd / sqrt(1 + 2 ^ (-2 * i));
 end
 coefd = int64(coefd * 2 ^ 62);
-coefd = bitshift(coefd, -(62 - PHI_WDT + 2));
-coefd = fi(coefd, numerictype(0, PHI_WDT - 2, 0));
-coefd = reinterpretcast(coefd, numerictype(0, PHI_WDT - 2, PHI_WDT - 2));
-
-% debug info
-if (false)
-    for i = 1 : length(atanlut)
-        fprintf('N%i : atan = %i\n', i, storedInteger(atanlut(i)));
-    end
-    fprintf('coefd = %i\n', storedInteger(coefd));
-end
+coefd = bitshift(coefd, -(62 - PHI_WIDTH + 2));
+coefd = fi(coefd, numerictype(0, PHI_WIDTH - 2, 0));
+coefd = reinterpretcast(coefd, numerictype(0, PHI_WIDTH - 2, PHI_WIDTH - 2));
 
 L = length(phi);
-T = numerictype(1, PHI_WDT, PHI_WDT - 2);
+T = numerictype(1, PHI_WIDTH, PHI_WIDTH - 2);
 cosCordic = fi(zeros(1, L), T);
 sinCordic = fi(zeros(1, L), T);
 % CORDIC algorithm
@@ -49,14 +41,14 @@ for i = 1 : L
     x(:) = coefd;
     y(:) = 0;
     % cast phi angle from 0...2*pi to -pi/2...pi/2
-    if (bitget(phi(i), PHI_WDT) == bitget(phi(i), PHI_WDT - 1)) % 1, 4 quarter (00 or 11)         
+    if (bitget(phi(i), PHI_WIDTH) == bitget(phi(i), PHI_WIDTH - 1)) % 1, 4 quarter (00 or 11)         
         z = reinterpretcast(phi(i), T);    
         qrt = false;
     else % 2, 3 quarter (01 or 10)    
         z = reinterpretcast(phi(i), T);
         z = accumneg(z, eps(z), 'Floor', 'Wrap');
         % first bit and inverted others
-        z = reinterpretcast(bitconcat(bitget(z, PHI_WDT), bitcmp(bitsliceget(z, PHI_WDT - 1, 1))), T);
+        z = reinterpretcast(bitconcat(bitget(z, PHI_WIDTH), bitcmp(bitsliceget(z, PHI_WIDTH - 1, 1))), T);
         qrt = true;
     end
     % iterations of algorithm
@@ -71,14 +63,6 @@ for i = 1 : L
             x = accumpos(x, ysh, 'Floor', 'Wrap');
             y = accumneg(y, xsh, 'Floor', 'Wrap');
             z = accumpos(z, atanlut(j + 1), 'Floor', 'Wrap');
-        end
-        % debug info
-        if (false)
-            fprintf('j  : %i \n', j);
-            fprintf('x  : %i (%s)\n', x.int, x.bin);
-            fprintf('y  : %i (%s)\n', y.int, y.bin);
-            fprintf('xsh: %i (%s)\n', xsh.int, xsh.bin);
-            fprintf('ysh: %i (%s)\n', ysh.int, ysh.bin);
         end
     end
     % limit outputs

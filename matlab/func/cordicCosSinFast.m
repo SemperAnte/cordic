@@ -9,23 +9,23 @@ function [cosCordic, sinCordic] = cordicCosSinFast(phi, N)
 %                      signed fi [-pi(1000..) ...   pi(0111..))
 % N   - number of iterations
 
-PHI_WDT = phi.WordLength;
+PHI_WIDTH = phi.WordLength;
 % convert to unsigned
-phi = reinterpretcast(phi, numerictype(0, PHI_WDT, PHI_WDT));
+phi = reinterpretcast(phi, numerictype(0, PHI_WIDTH, PHI_WIDTH));
 phi = int64(storedInteger(phi));
 % cast angle from 0 ... 2*pi to pi/2 ... -pi/2 
 % 2, 3 quarter
-qrt = (phi >= 2 ^ (PHI_WDT - 2)) & (phi < 3 * 2 ^ (PHI_WDT - 2));
-phi(qrt) = 2 ^ (PHI_WDT - 1) - phi(qrt);
+qrt = (phi >= 2 ^ (PHI_WIDTH - 2)) & (phi < 3 * 2 ^ (PHI_WIDTH - 2));
+phi(qrt) = 2 ^ (PHI_WIDTH - 1) - phi(qrt);
 % 4 quarter
-ind = phi >=  3 * 2 ^ (PHI_WDT - 2);
-phi(ind) = phi(ind) - 2 ^ PHI_WDT;
+ind = phi >=  3 * 2 ^ (PHI_WIDTH - 2);
+phi(ind) = phi(ind) - 2 ^ PHI_WIDTH;
 
 % lut table for arctangent
 atanlut = int64(zeros(1, N));
 for i = 1 : N
    atanlut(i) = atand(2 ^ (-(i - 1))) / 90 * 2 ^ 62; 
-   atanlut(i) = bitshift(atanlut(i), -(62 - PHI_WDT + 2));   
+   atanlut(i) = bitshift(atanlut(i), -(62 - PHI_WIDTH + 2));   
 end
 % coefficient of deformation value
 coefd = 1;
@@ -33,15 +33,7 @@ for i = 0 : N - 1
     coefd = coefd / sqrt(1 + 2^(-2 * i));
 end
 coefd = int64(coefd * 2 ^ 62);
-coefd = bitshift(coefd, -(62 - PHI_WDT + 2));
-
-% debug info
-if (false)
-    for i = 1 : length(atanlut)
-        fprintf('N%i : atan = %i\n', i, atanlut(i));
-    end
-    fprintf('coefd = %i\n', coefd);
-end
+coefd = bitshift(coefd, -(62 - PHI_WIDTH + 2));
 
 L = length(phi);
 cosCordic = int64(zeros(1, L));
@@ -73,12 +65,12 @@ end
 cosCordic(qrt) = - cosCordic(qrt);
 
 % limit outputs
-cosCordic(cosCordic >   2 ^ (PHI_WDT - 2)) =   2 ^ (PHI_WDT - 2);
-cosCordic(cosCordic < - 2 ^ (PHI_WDT - 2)) = - 2 ^ (PHI_WDT - 2);
-sinCordic(sinCordic >   2 ^ (PHI_WDT - 2)) =   2 ^ (PHI_WDT - 2);
-sinCordic(sinCordic < - 2 ^ (PHI_WDT - 2)) = - 2 ^ (PHI_WDT - 2);
+cosCordic(cosCordic >   2 ^ (PHI_WIDTH - 2)) =   2 ^ (PHI_WIDTH - 2);
+cosCordic(cosCordic < - 2 ^ (PHI_WIDTH - 2)) = - 2 ^ (PHI_WIDTH - 2);
+sinCordic(sinCordic >   2 ^ (PHI_WIDTH - 2)) =   2 ^ (PHI_WIDTH - 2);
+sinCordic(sinCordic < - 2 ^ (PHI_WIDTH - 2)) = - 2 ^ (PHI_WIDTH - 2);
 
 % cast int64 to fi
-T = numerictype(1, PHI_WDT, PHI_WDT - 2);
-cosCordic = fi(double(cosCordic) / 2 ^ (PHI_WDT - 2), T);
-sinCordic = fi(double(sinCordic) / 2 ^ (PHI_WDT - 2), T);
+T = numerictype(1, PHI_WIDTH, PHI_WIDTH - 2);
+cosCordic = fi(double(cosCordic) / 2 ^ (PHI_WIDTH - 2), T);
+sinCordic = fi(double(sinCordic) / 2 ^ (PHI_WIDTH - 2), T);

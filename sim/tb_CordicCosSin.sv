@@ -15,25 +15,21 @@ module tb_cordicCosSin();
     // parameters from generated file
     `include "parms.vh"     
 
-    logic                          clk;
-    logic                          reset;
-    logic                          sclr;
-    logic                          en;
-    logic                          st;
-    logic        [PHI_WDT - 1 : 0] phi;
-    logic                          rdy;
-    logic signed [PHI_WDT - 1 : 0] cos;
-    logic signed [PHI_WDT - 1 : 0] sin;
+    logic                            clk;
+    logic                            reset;
+    logic                            st;
+    logic        [PHI_WIDTH - 1 : 0] phi;
+    logic                            rdy;
+    logic signed [PHI_WIDTH - 1 : 0] cos;
+    logic signed [PHI_WIDTH - 1 : 0] sin;
    
     cordicCosSin
       #( .CORDIC_TYPE(CORDIC_TYPE),
          .N          (N          ),      
-         .PHI_WDT    (PHI_WDT    ))
+         .PHI_WIDTH    (PHI_WIDTH    ))
     uut
        (.clk  (clk  ),
         .reset(reset),
-        .sclr (sclr ),
-        .en   (en   ),
         .st   (st   ),
         .phi  (phi  ),
         .rdy  (rdy  ),
@@ -53,12 +49,6 @@ module tb_cordicCosSin();
         reset = 1'b1;
         #(10*T + T/2);
         reset = 1'b0;
-    end
-   
-    initial
-    begin
-        sclr = 1'b0;
-        en   = 1'b1;
     end
    
     initial

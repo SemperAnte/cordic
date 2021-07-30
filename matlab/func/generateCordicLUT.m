@@ -9,17 +9,17 @@ function generateCordicLUT(fpathLUT)
 maxSizeLUT = 64;
 atanLUTtotal = uint64(zeros(1, maxSizeLUT));
 for i = 1 : maxSizeLUT
-   atanDouble = atand(2^(-(i - 1))) / 90;
+   atanDouble = atand(2 ^ (-(i - 1))) / 90;
    atanLUTtotal(i) = uint64(atanDouble * (2 ^ 62));
 end
 
 % LUT table for coefd
 maxSizeLUT = 26; 
-coefdDbl   = 1;
+coefdDouble = 1;
 coefdLUTtotal = uint64(zeros(1, maxSizeLUT));
 for i = 0 : maxSizeLUT - 1
-    coefdDbl = coefdDbl / sqrt(1 + 2^(-2 * i));
-    coefdLUTtotal(i + 1) = uint64(coefdDbl * (2^62));
+    coefdDouble = coefdDouble / sqrt(1 + 2 ^ (-2 * i));
+    coefdLUTtotal(i + 1) = uint64(coefdDouble * (2 ^ 62));
 end
 
 % generate code file
