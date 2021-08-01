@@ -37,7 +37,7 @@ set_time_format -unit ns -decimal_places 3
 #**************************************************************
 # Create Clock
 #**************************************************************
-
+derive_clock_uncertainty
 create_clock -name clk -period 10.000 -waveform {0.000 5.000} [get_ports clk]
 
 
@@ -78,7 +78,9 @@ set_input_delay -add_delay  -clock [get_clocks clk]  1.500 [get_ports {phi[*]}]
 #**************************************************************
 # Set False Path
 #**************************************************************
-set_false_path -from [get_clocks clk] -to [get_ports {*}]
+set_false_path -from [get_clocks clk] -to [get_ports rdy]
+set_false_path -from [get_clocks clk] -to [get_ports {cos[*]}]
+set_false_path -from [get_clocks clk] -to [get_ports {sin[*]}]
 
 #**************************************************************
 # Set Multicycle Path

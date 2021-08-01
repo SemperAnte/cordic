@@ -17,9 +17,11 @@ fpathLUT = '..\rtl\cordicLUT.vh';
 comparePlot = false; % compare CORDIC results with double precision
 checkSlow = false;   % run slow version of algorithm and compare it with fast
 
-CORDIC_TYPE = 1;  % for testbench - '0' for "SERIAL", '1' for "PARALLEL"
+CORDIC_TYPE = "PARALLEL";  % for testbench - "SERIAL" or "PARALLEL"
 CORDIC_N    = 13; % number of iterations for CORDIC algorithm
-PHI_WIDTH   = 18; % width of input angle phi (outputs is same width)  
+PHI_WIDTH   = 18; % width of input angle phi (outputs is same width)
+
+assert(any(strcmp(CORDIC_TYPE, ["SERIAL", "PARALLEL"])), "Wrong CORDIC_TYPE.");
 
 % input angle phi
 Npoints = 1.0e3;  % number of points for test
@@ -28,11 +30,7 @@ phi = linspace(0, 1, Npoints);
 phi = phi - phiSign * 0.5;
 phi = fi(phi, phiSign, PHI_WIDTH, PHI_WIDTH);
 
-if (~CORDIC_TYPE)
-    fprintf('CORDIC_TYPE = "SERIAL"\n');
-else
-    fprintf('CORDIC_TYPE = "PARALLEL"\n');
-end
+fprintf('CORDIC_TYPE = "%s"\n', CORDIC_TYPE);
 fprintf('CORDIC_N  = %i\n', CORDIC_N);
 fprintf('PHI_WIDTH = %i\n', PHI_WIDTH);
 
@@ -95,11 +93,7 @@ end
 % file with parms
 fileID = fopen([fpathSim 'parms.vh'], 'wt');
 fprintf(fileID, '// Automatically generated with Matlab, do not edit\n' );
-if (~CORDIC_TYPE)
-    fprintf(fileID, 'localparam string CORDIC_TYPE = "SERIAL";\n');
-else
-    fprintf(fileID, 'localparam string CORDIC_TYPE = "PARALLEL";\n');
-end
+fprintf(fileID, 'localparam string CORDIC_TYPE = "%s";\n', CORDIC_TYPE);
 fprintf(fileID, 'localparam int N = %i,\n', CORDIC_N);
 fprintf(fileID, '               PHI_WIDTH = %i;\n', PHI_WIDTH);
 fclose(fileID);

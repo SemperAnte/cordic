@@ -14,7 +14,7 @@ fpathSim = '..\sim\';
 fpathModelsim  = 'D:\CADS\Modelsim10_1c\win32\modelsim.exe';
 fpathLUT = '..\rtl\cordicLUT.vh';
 
-CORDIC_TYPE = 0;  % for testbench - '0' for "SERIAL", '1' for "PARALLEL"
+CORDIC_TYPE = "PARALLEL";  % for testbench - "SERIAL" or "PARALLEL"
 CORDIC_N    = 13; % number of iterations for CORDIC algorithm
 XY_WDT      = 18; % width of x/y inputs
 
@@ -30,11 +30,7 @@ y = repmat(y, 1, length(x) / length(y));
 x = sfi(x, XY_WDT, XY_WDT - 1);
 y = sfi(y, XY_WDT, XY_WDT - 1);
 
-if (~CORDIC_TYPE)
-    fprintf('CORDIC_TYPE = "SERIAL"\n');
-else
-    fprintf('CORDIC_TYPE = "PARALLEL"\n');
-end
+fprintf('CORDIC_TYPE = "%s"\n', CORDIC_TYPE);
 fprintf('CORDIC_N = %i\n', CORDIC_N);
 fprintf('XY_WDT   = %i\n', XY_WDT);
 
@@ -97,11 +93,7 @@ end
 % file with parms
 fileID = fopen([fpathSim 'parms.vh'], 'wt');
 fprintf(fileID, '// Automatically generated with Matlab, do not edit\n');
-if (~CORDIC_TYPE)
-    fprintf(fileID, 'localparam string CORDIC_TYPE = "SERIAL";\n');
-else
-    fprintf(fileID, 'localparam string CORDIC_TYPE = "PARALLEL";\n');
-end
+fprintf(fileID, 'localparam string CORDIC_TYPE = "%s";\n', CORDIC_TYPE);
 fprintf(fileID, 'localparam int N      = %i,\n', CORDIC_N);
 fprintf(fileID, '               XY_WDT = %i;\n', XY_WDT);
 fclose(fileID);
