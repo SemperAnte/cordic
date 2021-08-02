@@ -14,9 +14,9 @@ fpathSim = '..\sim\';
 fpathModelsim  = 'D:\CADS\Modelsim10_1c\win32\modelsim.exe';
 fpathLUT = '..\rtl\cordicLUT.vh';
 
-CORDIC_TYPE = "PARALLEL";  % for testbench - "SERIAL" or "PARALLEL"
+CORDIC_TYPE = "SERIAL";  % for testbench - "SERIAL" or "PARALLEL"
 CORDIC_N    = 13; % number of iterations for CORDIC algorithm
-XY_WDT      = 18; % width of x/y inputs
+XY_WIDTH    = 18; % width of x/y inputs
 
 comparePlot = false; % compare CORDIC results with double precision
 checkSlow = false;   % run slow version of algorithm and compare it with fast
@@ -27,12 +27,12 @@ y = -1 : 1e-2 : 1;
 x = repmat(x', 1, length(y))';
 x = x(:)';
 y = repmat(y, 1, length(x) / length(y));
-x = sfi(x, XY_WDT, XY_WDT - 1);
-y = sfi(y, XY_WDT, XY_WDT - 1);
+x = sfi(x, XY_WIDTH, XY_WIDTH - 1);
+y = sfi(y, XY_WIDTH, XY_WIDTH - 1);
 
 fprintf('CORDIC_TYPE = "%s"\n', CORDIC_TYPE);
 fprintf('CORDIC_N = %i\n', CORDIC_N);
-fprintf('XY_WDT   = %i\n', XY_WDT);
+fprintf('XY_WIDTH = %i\n', XY_WIDTH);
 
 % generate LUT for atan/coefd
 generateCordicLUT(fpathLUT);
@@ -94,8 +94,8 @@ end
 fileID = fopen([fpathSim 'parms.vh'], 'wt');
 fprintf(fileID, '// Automatically generated with Matlab, do not edit\n');
 fprintf(fileID, 'localparam string CORDIC_TYPE = "%s";\n', CORDIC_TYPE);
-fprintf(fileID, 'localparam int N      = %i,\n', CORDIC_N);
-fprintf(fileID, '               XY_WDT = %i;\n', XY_WDT);
+fprintf(fileID, 'localparam int N        = %i,\n', CORDIC_N);
+fprintf(fileID, '               XY_WIDTH = %i;\n', XY_WIDTH);
 fclose(fileID);
 % files with x/y
 txtFileWrite([fpathSim 'xin.txt'], x, 'DEC');

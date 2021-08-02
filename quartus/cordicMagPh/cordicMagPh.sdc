@@ -37,8 +37,8 @@ set_time_format -unit ns -decimal_places 3
 #**************************************************************
 # Create Clock
 #**************************************************************
-
-create_clock -name {clk} -period 10.000 -waveform { 0.000 5.000 } [get_ports {clk}]
+derive_clock_uncertainty
+create_clock -name clk -period 10.000 -waveform {0.000 5.000} [get_ports clk]
 
 
 #**************************************************************
@@ -61,12 +61,10 @@ create_clock -name {clk} -period 10.000 -waveform { 0.000 5.000 } [get_ports {cl
 #**************************************************************
 # Set Input Delay
 #**************************************************************
-set_input_delay -add_delay  -clock [get_clocks {clk}]  1.000 [get_ports {reset}]
-set_input_delay -add_delay  -clock [get_clocks {clk}]  1.000 [get_ports {sclr}]
-set_input_delay -add_delay  -clock [get_clocks {clk}]  1.000 [get_ports {en}]
-set_input_delay -add_delay  -clock [get_clocks {clk}]  1.000 [get_ports {st}]
-set_input_delay -add_delay  -clock [get_clocks {clk}]  1.000 [get_ports {xin[*]}]
-set_input_delay -add_delay  -clock [get_clocks {clk}]  1.000 [get_ports {yin[*]}]
+set_input_delay -add_delay  -clock [get_clocks clk]  1.500 [get_ports reset]
+set_input_delay -add_delay  -clock [get_clocks clk]  1.500 [get_ports st]
+set_input_delay -add_delay  -clock [get_clocks clk]  1.500 [get_ports {xin[*]}]
+set_input_delay -add_delay  -clock [get_clocks clk]  1.500 [get_ports {yin[*]}]
 
 #**************************************************************
 # Set Output Delay
@@ -81,9 +79,9 @@ set_input_delay -add_delay  -clock [get_clocks {clk}]  1.000 [get_ports {yin[*]}
 #**************************************************************
 # Set False Path
 #**************************************************************
-set_false_path -from [get_clocks {clk}] -to [get_ports {rdy}]
-set_false_path -from [get_clocks {clk}] -to [get_ports {mag[*]}]
-set_false_path -from [get_clocks {clk}] -to [get_ports {ph[*]}]
+set_false_path -from [get_clocks clk] -to [get_ports rdy]
+set_false_path -from [get_clocks clk] -to [get_ports {mag[*]}]
+set_false_path -from [get_clocks clk] -to [get_ports {ph[*]}]
 
 
 #**************************************************************

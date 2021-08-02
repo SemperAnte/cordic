@@ -15,26 +15,22 @@ module tb_cordicMagPh();
     // parameters from generated file
     `include "parms.vh"     
 
-    logic                         clk;
-    logic                         reset;
-    logic                         sclr;
-    logic                         en;
-    logic                         st;
-    logic signed [XY_WDT - 1 : 0] xin;
-    logic signed [XY_WDT - 1 : 0] yin;   
-    logic                         rdy;
-    logic        [XY_WDT - 1 : 0] mag;
-    logic signed [XY_WDT + 1 : 0] ph;
+    logic                           clk;
+    logic                           reset;
+    logic                           st;
+    logic signed [XY_WIDTH - 1 : 0] xin;
+    logic signed [XY_WIDTH - 1 : 0] yin;   
+    logic                           rdy;
+    logic        [XY_WIDTH - 1 : 0] mag;
+    logic signed [XY_WIDTH + 1 : 0] ph;
    
     cordicMagPh
       #(.CORDIC_TYPE (CORDIC_TYPE),
         .N           (N          ),      
-        .XY_WDT      (XY_WDT     ))
+        .XY_WIDTH    (XY_WIDTH   ))
     uut
        (.clk  (clk  ),
         .reset(reset),
-        .sclr (sclr ),
-        .en   (en   ),
         .st   (st   ),
         .xin  (xin  ),
         .yin  (yin  ),
@@ -55,12 +51,6 @@ module tb_cordicMagPh();
         reset = 1'b1;
         #(10 * T + T / 2);
         reset = 1'b0;
-    end
-   
-    initial
-    begin
-        sclr = 1'b0;
-        en   = 1'b1;
     end
    
     initial

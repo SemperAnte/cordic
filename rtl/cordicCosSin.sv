@@ -15,9 +15,9 @@
 // see Matlab bit-accurate model
 //--------------------------------------------------------------------------------
 module cordicCosSin
-   #(parameter string CORDIC_TYPE = "PARALLEL",  // "PARALLEL" or "SERIAL"
-               int    N           = 13,          // number of iterations for CORDIC algorithm
-               int    PHI_WIDTH   = 18)          // width of input angle phi (outputs is same width)                
+   #(parameter string CORDIC_TYPE = "SERIAL",  // "PARALLEL" or "SERIAL"
+               int    N           = 13,        // number of iterations for CORDIC algorithm
+               int    PHI_WIDTH   = 18)        // width of input angle phi (outputs is same width)                
     (input  logic                            clk,
      input  logic                            reset,   // async reset
       
@@ -31,7 +31,7 @@ module cordicCosSin
     generate
         if (CORDIC_TYPE == "PARALLEL") begin // parallel architecture
             cordicCosSinParallel
-               #(.N        (N),
+               #(.N        (N        ),
                  .PHI_WIDTH(PHI_WIDTH))
             cordicCosSinParallelInst
                 (.clk  (clk  ),
@@ -43,7 +43,7 @@ module cordicCosSin
                  .sin  (sin  ));
         end else if (CORDIC_TYPE == "SERIAL") begin // serial architecture
             cordicCosSinSerial
-                #(.N        (N),
+                #(.N        (N        ),
                   .PHI_WIDTH(PHI_WIDTH))
             cordicCosSinSerialInst
                 (.clk  (clk  ),
