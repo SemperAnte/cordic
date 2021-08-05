@@ -2,26 +2,26 @@
 // Project:       dsplib
 // Author:        Shustov Aleksey (SemperAnte), semte@semte.ru
 // History:
-//    03.06.2016 - release
-//    30.07.2021 - minor refactoring
+//    05.08.2021 - created
 //--------------------------------------------------------------------------------
 // parallel architecture for CORDIC algorithm
 // pipelined for N + 2 clocks
 //--------------------------------------------------------------------------------
-module cordicCosSinParallel
-   #(parameter int N,         // number of iterations for CORDIC algorithm
-                   PHI_WIDTH) // width of input angle phi (outputs is same width)                
-    (input  logic                            clk,
-     input  logic                            reset,   // async reset
-      
-     input  logic                            st,      // start calc
-     input  logic        [PHI_WIDTH - 1 : 0] phi,     // input angle
-            
-     output logic                            rdy,     // result is ready
-     output logic signed [PHI_WIDTH - 1 : 0] cos,
-     output logic signed [PHI_WIDTH - 1 : 0] sin);   
+module cordicMagPhParallel
+   #(parameter int N,        // number of iterations for CORDIC algorithm
+               int XY_WIDTH) // width of inputs x, y               
+    (input  logic                           clk,
+     input  logic                           reset,   // async reset
+     
+     input  logic                           st,      // start calc
+     input  logic signed [XY_WIDTH - 1 : 0] xin,     // full range [-1 1)
+     input  logic signed [XY_WIDTH - 1 : 0] yin,     // full range [-1 1)
+           
+     output logic                           rdy,     // result is ready
+     output logic        [XY_WIDTH - 1 : 0] mag,     // range [0 ~1.41], unsigned
+     output logic signed [XY_WIDTH + 1 : 0] ph);     // range (-pi(1100..) ... pi(0100..)], signed 2 bit wider than XY_WIDTH   
  
-    // regs   
+    // regs
     logic signed [PHI_WIDTH - 1 : 0] x [N + 1];
     logic signed [PHI_WIDTH - 1 : 0] y [N + 1];    
     logic signed [PHI_WIDTH - 1 : 0] z [N];
@@ -42,14 +42,52 @@ module cordicCosSinParallel
    
     always_ff @(posedge clk, posedge reset)
     if (reset) begin
-        x <= '{default : '0};
-        y <= '{default : '0};
-        z <= '{default : '0};
-        qrt    <= '0;
-        rdyReg <= '0;
-    end else begin
+        ;
+    end else begin        
         // rdy
         rdyReg <= {st, rdyReg[N + 1 : 1]};
+        if (xin < 0) begin
+            x[N] <= -xin;
+            qrt[N] <= 1'b1;
+        end else begin
+            x[N] <= xin;
+            qrt[N] <= 1'b0;
+        end
+        y[N] <= yin;
+        qrt[N - 1 : 0] <= qrt[N : 1];
+        //xin[N - 1 : 0] <= xin[N : 1];
+        //yin[N - 1 : 0] <= yin[N : 1];
+        // ST1
+        if (y[N] == 0) begin // if y = 0 CORDIC algorithm doesn't required
+            ;
+        end else begin // y != 0, use CORDIC algorithm
+            if (y[N] < 0) begin
+                x[N - 1] <= x[N] - y[N];
+                y[N - 1] <= y[N] + x[N];
+                z[N - 1] <= -atan;
+            end else begin
+                x[N - 1] <= x[N] + y[N];
+                y[N - 1] <= y[N] - x[N];
+                z[N - 1] <= atan;
+            end                        
+        end
+        // ST2
+        for (int i = 0; i < N - 1; i++) begin            
+            if (y[N - 1] < 0) begin
+                x[N - 2] <= x[N - 1] - yShift;
+                y[N - 2] <= y[N - 1] + xShift;
+                z[N - 2] <= z[N - 1] + atan;
+            end else begin // y[N - 1] >= 0
+                x[N - 2] <= x[N - 1] + yShift;
+                y[N - 2] <= y[N - 1] - xShift;
+                z[N - 2] <= z[N - 1] + atan;
+            end
+        end
+        
+        
+        
+        
+        
         // qrt
         if (phi[PHI_WIDTH - 1] == phi[PHI_WIDTH - 2]) begin // 1, 4 quarter (00 or 11)
             qrt[N] <= 1'b0;
@@ -86,15 +124,19 @@ module cordicCosSinParallel
             y[0] <= yCnv;
         end
     end
+    
+    // outputs
+    assign rdy = RdyReg[0];
+    
    
     // comb part
     // transform phi angle from 0...2*pi to -pi/2...pi/2
     always_comb begin 
         if (phi[PHI_WIDTH - 1] == phi[PHI_WIDTH - 2]) begin // 1, 4 quarter (00 or 11)
-            phiCnv = phi; 
-        end else begin 
+            phiCnv = phi;
+        end else begin
             phiCnv = phi - 1'd1;
-            phiCnv = {phiCnv[PHI_WIDTH - 1], ~phiCnv[PHI_WIDTH - 2 : 0]};  
+            phiCnv = {phiCnv[PHI_WIDTH - 1], ~phiCnv[PHI_WIDTH - 2 : 0]};
         end
     end
     // shift reg
