@@ -59,12 +59,13 @@ module tb_cordicMagPh();
         static int yinFile = $fopen("yin.txt", "r"); 
         static int magFile = $fopen("mag.txt", "w");
         static int phFile  = $fopen("ph.txt",  "w");
-        static int flagFile;
+        int flagFile;
+        int count;
       
         if (!xinFile)
-            $display( "Cant open file xin.txt.");
+            $display("Can not open file xin.txt.");
         if (!yinFile)
-            $display( "Cant open file yin.txt.");
+            $display("Can not open file yin.txt.");
         if (!xinFile || !yinFile)
             $stop;
       
@@ -78,8 +79,8 @@ module tb_cordicMagPh();
             while (!$feof(xinFile) || !$feof(yinFile)) begin         
                 st = 1'b1;
                 // read xin and yin from file
-                $fscanf(xinFile, "%d\n", xin);
-                $fscanf(yinFile, "%d\n", yin);            
+                count = $fscanf(xinFile, "%d\n", xin);
+                count = $fscanf(yinFile, "%d\n", yin);            
                 #(T);
                 st = 1'b0;
                 wait (rdy);

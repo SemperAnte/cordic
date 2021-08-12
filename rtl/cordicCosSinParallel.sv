@@ -34,7 +34,6 @@ module cordicCosSinParallel
     logic signed [PHI_WIDTH - 1 : 0] yShift [N - 1];
     logic signed [PHI_WIDTH - 1 : 0] xCnv, yCnv;      
    
-    `define INFO_MODE    // display LUT values
     // full LUT tables for atan, coefd generated with Matlab
     `include "cordicLUT.vh"
     localparam int PKG_WIDTH = PHI_WIDTH;

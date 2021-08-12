@@ -35,7 +35,6 @@ module cordicCosSinSerial
     // fsm
     enum int unsigned {ST0, ST1, ST2, ST3} state;
       
-    `define INFO_MODE    // display LUT values
     // long LUT tables for atan/coefd generated with Matlab
     `include "cordicLUT.vh"
     localparam int PKG_WIDTH = PHI_WIDTH;

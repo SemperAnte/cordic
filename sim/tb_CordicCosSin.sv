@@ -26,7 +26,7 @@ module tb_cordicCosSin();
     cordicCosSin
       #( .CORDIC_TYPE(CORDIC_TYPE),
          .N          (N          ),      
-         .PHI_WIDTH    (PHI_WIDTH    ))
+         .PHI_WIDTH  (PHI_WIDTH  ))
     uut
        (.clk  (clk  ),
         .reset(reset),
@@ -56,10 +56,11 @@ module tb_cordicCosSin();
         static int phiFile = $fopen("phi.txt", "r");      
         static int cosFile = $fopen("cos.txt", "w");
         static int sinFile = $fopen("sin.txt", "w");
-        static int flagFile;
+        int flagFile;
+        int count;
       
         if (phiFile == 0) begin
-            $display("Cant open file phi.txt.");
+            $display("Can not open file phi.txt.");
             $stop;
         end
       
@@ -72,7 +73,7 @@ module tb_cordicCosSin();
             while (!$feof(phiFile)) begin         
                 st = 1'b1;
                 // read phi from file
-                $fscanf(phiFile, "%d\n", phi);
+                count = $fscanf(phiFile, "%d\n", phi);
                 #(T);
                 st = 1'b0;
                 wait (rdy);
@@ -91,7 +92,7 @@ module tb_cordicCosSin();
                 @ (negedge clk);
                 st = 1'b1;
                 // read phi from file
-                $fscanf(phiFile, "%d\n", phi);
+                count = $fscanf(phiFile, "%d\n", phi);
                 if (rdy) begin
                     // write cos and sin to file
                     $fwrite(cosFile, "%d\n", cos);
