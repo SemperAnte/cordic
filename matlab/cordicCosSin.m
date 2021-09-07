@@ -17,7 +17,7 @@ fpathLUT = '..\rtl\cordicLUT.vh';
 comparePlot = false; % compare CORDIC results with double precision
 checkSlow = false;   % run slow version of algorithm and compare it with fast
 
-CORDIC_TYPE = "PARALLEL";  % for testbench - "SERIAL" or "PARALLEL"
+CORDIC_TYPE = "SERIAL";  % for testbench - "SERIAL" or "PARALLEL"
 CORDIC_N    = 13; % number of iterations for CORDIC algorithm
 PHI_WIDTH   = 18; % width of input angle phi (outputs is same width)
 

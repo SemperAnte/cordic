@@ -12,8 +12,8 @@ localparam logic [PKG_WIDTH - 3 : 0] coefd =
     (N - 1 > COEFD_LUT_LONG_SIZE - 1) ? coefdLUTlong[COEFD_LUT_LONG_SIZE - 1][61 -: PKG_WIDTH - 2]:
                                         coefdLUTlong[N - 1][61 -: PKG_WIDTH - 2];
 
-//`define INFO_MODE // display LUT tables
-`ifdef INFO_MODE
+//`define CORDIC_INFO_MODE // display LUT tables
+`ifdef CORDIC_INFO_MODE
     initial begin
         for (int i = 0; i < N; i ++)
             $display("N%0d : atan = %d (%b)", i, atanLUTshort[i], atanLUTshort[i]);
